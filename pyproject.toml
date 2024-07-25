@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "grafana-telegram-bot"
+version = "0.1.0"
+description = "Grafana extract data"
+authors = ["venysssssssssss <shablaur7@hotmail.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+selenium = "^4.23.1"
+requests = "^2.32.3"
+schedule = "^1.2.2"
+python-dotenv = "^1.0.1"
+webdriver-manager = "^4.0.2"
+apscheduler = "^3.10.4"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
