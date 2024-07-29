@@ -13,7 +13,11 @@ from selenium.webdriver.support.ui import WebDriverWait
 # Função para iniciar o navegador Edge
 def start_browser():
     service = Service(
+<<<<<<< HEAD
         'edge/msedgedriver.exe'
+=======
+        'edge/msedgedriver'
+>>>>>>> 286f0fca5436743759c6810d802ddac182e410d8
     )  # Substitua pelo caminho correto do EdgeDriver
     options = webdriver.EdgeOptions()
     driver = webdriver.Edge(service=service, options=options)
@@ -23,7 +27,11 @@ def start_browser():
 
 # Função para autenticar no site
 def authenticate(driver, email, password):
+<<<<<<< HEAD
     login_url = 'https://e-bots.co/grafana/d/b12d0f69-2249-46c9-9a3d-da56588d47f4/ebots-detalhe-do-robo?orgId=1&refresh=5m&var-Robot=tahto-pap&var-Robot_id=51&var-exibir_itens=processados&var-exibir=10000&var-exibir_tarefas=todas'
+=======
+    login_url = 'https://e-bots.co/grafana/d/b12d0f69-2249-46c9-9a3d-da56588d47f4/ebots-detalhe-do-robo?var-Robot=tahto-pap-mvp2&orgId=1&refresh=5m&var-Robot_id=82&var-exibir_itens=processados&var-exibir=100&var-exibir_tarefas=todas'
+>>>>>>> 286f0fca5436743759c6810d802ddac182e410d8
     driver.get(login_url)
     time.sleep(5)
 
@@ -54,8 +62,29 @@ def authenticate(driver, email, password):
 
 
 # Função para rolar a página até o final usando o scrollbar
+<<<<<<< HEAD
 def scroll_page_to_table(driver):
     try:
+=======
+def scroll_to_bottom(driver):
+    try:
+        wait_for_element_and_click(
+            driver,
+            '//*[@id="reactRoot"]/div[1]/div/div[1]/div[2]/div[2]/div[4]/div/div[1]/button[1]',
+        )
+        wait_for_element_and_click(
+            driver, '//*[@id="TimePickerContent"]/div/div/div[1]/div/div/input'
+        )
+        send_keys_to_element(
+            driver,
+            '//*[@id="TimePickerContent"]/div/div/div[1]/div/div/input',
+            '1',
+        )
+        wait_for_element_and_click(
+            driver,
+            '//*[@id="TimePickerContent"]/div/div/div[2]/div[1]/ul/li[4]/label',
+        )
+>>>>>>> 286f0fca5436743759c6810d802ddac182e410d8
 
         scrollbar = driver.find_element(
             By.XPATH, '//*[@id="pageContent"]/div[3]/div/div[3]/div'
@@ -86,6 +115,7 @@ def scroll_page_to_table(driver):
         new_height = driver.execute_script('return document.body.scrollHeight')
 
 
+<<<<<<< HEAD
 def scroll_table_down(driver):
     # Identifica o elemento scrollbar na página
     scrollbar = WebDriverWait(driver, 10).until(
@@ -137,6 +167,40 @@ def extract_table_data(driver):
         ).text  # Ajuste o XPath relativo para o status
         all_data.append({'item': item, 'status': status})
         print(f'Processando linha {i + 1}: Item - {item}, Status - {status}')
+=======
+# Função para rolar a tabela até o final usando JavaScript
+def scroll_table_to_bottom(driver):
+    all_data = []
+    total_rows_counted = 0
+    previous_rows_counted = -1
+
+    target_xpath = (
+        '//*[@id=":rl:"]/div/div/div[1]/div/div[2]/div/div[1]/div/div/div[1]'
+    )
+
+    while total_rows_counted != previous_rows_counted:
+        previous_rows_counted = total_rows_counted
+
+        driver.execute_script(
+            'arguments[0].scrollBy(0, arguments[0].scrollHeight);',
+            driver.find_element(By.XPATH, target_xpath),
+        )
+        time.sleep(1)  # Aguarda o carregamento de novas linhas
+
+        rows = driver.find_elements(By.XPATH, target_xpath)
+        new_rows_count = len(rows) - total_rows_counted
+        total_rows_counted += new_rows_count
+
+        for row in range(
+            total_rows_counted - new_rows_count + 1, total_rows_counted + 1
+        ):
+            try:
+                item_xpath = f'{target_xpath}[{row}]'
+                item = driver.find_element(By.XPATH, item_xpath).text
+                all_data.append(item)
+            except NoSuchElementException:
+                continue
+>>>>>>> 286f0fca5436743759c6810d802ddac182e410d8
 
     return all_data
 
@@ -144,6 +208,7 @@ def extract_table_data(driver):
 # Função para coletar informações do site
 def collect_info(driver):
     try:
+<<<<<<< HEAD
         all_data = extract_table_data(driver)
         total_rows = len(all_data)
 
@@ -210,6 +275,20 @@ def collect_info(driver):
     except WebDriverException as e:
         print(f'Erro ao coletar informações: {e}')
         return None, None, None, None, None, None, None, None
+=======
+        all_data = scroll_table_to_bottom(driver)
+        total_rows = len(all_data)
+
+        print(f'Total de linhas processadas: {total_rows}')
+        for item in all_data:
+            print(item)
+
+        return all_data
+
+    except WebDriverException as e:
+        print(f'Erro ao coletar informações: {e}')
+        return None
+>>>>>>> 286f0fca5436743759c6810d802ddac182e410d8
 
 
 def wait_for_element_and_click(driver, xpath, timeout=10):
@@ -239,9 +318,13 @@ def main():
     driver = start_browser()
     authenticate(driver, email, password)
 
+<<<<<<< HEAD
     # Rolar a página inteira e a tabela interna até o final após a autenticação
     scroll_page_to_table(driver)
     time.sleep(1)
+=======
+    scroll_to_bottom(driver)
+>>>>>>> 286f0fca5436743759c6810d802ddac182e410d8
 
     # Coletar informações e imprimir a quantidade de linhas processadas
     collect_info(driver)

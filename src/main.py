@@ -1,19 +1,40 @@
+<<<<<<< HEAD
 import time
 from selenium import webdriver
 from selenium.webdriver.edge.service import Service
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import WebDriverException, NoSuchElementException
 import requests
+=======
+>>>>>>> 286f0fca5436743759c6810d802ddac182e410d8
 import datetime
-import schedule
 import threading
+import time
 
+<<<<<<< HEAD
 # Função para iniciar o navegador Edge em modo headless
 def start_browser():
     service = Service('msedgedriver.exe')  # Substitua pelo caminho correto do EdgeDriver
+=======
+import requests
+import schedule
+from selenium import webdriver
+from selenium.common.exceptions import (NoSuchElementException,
+                                        WebDriverException)
+from selenium.webdriver.common.by import By
+from selenium.webdriver.edge.service import Service
+
+
+# Função para iniciar o navegador Edge em modo headless
+def start_browser():
+    service = Service(
+        'msedgedriver.exe'
+    )  # Substitua pelo caminho correto do EdgeDriver
+>>>>>>> 286f0fca5436743759c6810d802ddac182e410d8
     options = webdriver.EdgeOptions()
     driver = webdriver.Edge(service=service, options=options)
     return driver
+
 
 # Função para autenticar no site
 def authenticate(driver, email, password):
@@ -37,27 +58,45 @@ def authenticate(driver, email, password):
         print(f"Erro ao encontrar elementos de login: {e}")
         driver.quit()
 
+
 # Função para enviar mensagem via Telegram
 def send_telegram_message(message):
     telegram_token = '7226155746:AAEBPeOtzJrD_KQyeZinNBjh5HMmvHTBZLs'  # Substitua pelo token do seu bot do Telegram
     chat_id = '-1002165188451'  # Substitua pelo seu chat ID
     url = f'https://api.telegram.org/bot{telegram_token}/sendMessage'
-    payload = {
-        'chat_id': chat_id,
-        'text': message,
-        'parse_mode': 'Markdown'
-    }
+    payload = {'chat_id': chat_id, 'text': message, 'parse_mode': 'Markdown'}
     requests.post(url, data=payload)
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 286f0fca5436743759c6810d802ddac182e410d8
 # Função para rolar a tabela até o final
 def scroll_table(driver, base_xpath, row):
     if row % 15 == 0:
         try:
+<<<<<<< HEAD
             scroll_element = driver.find_element(By.XPATH, '//div[@class="track-vertical"]/div[@class="thumb-vertical"]')
             driver.execute_script("arguments[0].style.transform = 'translateY({}px)';".format(row * 10), scroll_element)
             time.sleep(1)  # Aguarda a tabela carregar novas linhas
         except NoSuchElementException as e:
             print(f"Erro ao rolar a tabela: {e}")
+=======
+            scroll_element = driver.find_element(
+                By.XPATH,
+                '//div[@class="track-vertical"]/div[@class="thumb-vertical"]',
+            )
+            driver.execute_script(
+                "arguments[0].style.transform = 'translateY({}px)';".format(
+                    row * 10
+                ),
+                scroll_element,
+            )
+            time.sleep(1)  # Aguarda a tabela carregar novas linhas
+        except NoSuchElementException as e:
+            print(f'Erro ao rolar a tabela: {e}')
+
+>>>>>>> 286f0fca5436743759c6810d802ddac182e410d8
 
 # Função para coletar informações do site
 def collect_info(driver):
@@ -78,6 +117,7 @@ def collect_info(driver):
         rows = driver.find_elements(By.XPATH, f'{base_xpath}/div[3]')
         total_rows = len(rows)
 
+<<<<<<< HEAD
         print(f"Total de linhas processadas: {total_rows}")
 
         # Verificar todas as linhas da tabela
@@ -100,42 +140,132 @@ def collect_info(driver):
                 elif status == "Erro de negócio" and item != "ValidarVendasLiberadas":
                     count_business_error += 1
                 elif status == "Falha de sistema" and item != "ValidarVendasLiberadas":
+=======
+        print(f'Total de linhas processadas: {total_rows}')
+
+        # Verificar todas as linhas da tabela
+        for row in range(1, total_rows + 1):
+            try:
+                item_xpath = f'{base_xpath}[{row}]/div[3]'
+                status_xpath = f'{base_xpath}[{row}]/div[7]'
+
+                item = driver.find_element(By.XPATH, item_xpath).text
+                status = driver.find_element(By.XPATH, status_xpath).text
+
+                if row <= 3:
+                    if (
+                        item == 'ValidarVendasLiberadas'
+                        and status == 'Falha de sistema'
+                    ):
+                        falha_detectada = True
+                    else:
+                        falha_detectada = False
+
+                if (
+                    status == 'Concluído com sucesso'
+                    and item != 'ValidarVendasLiberadas'
+                ):
+                    count_success += 1
+                elif (
+                    status == 'Erro de negócio'
+                    and item != 'ValidarVendasLiberadas'
+                ):
+                    count_business_error += 1
+                elif (
+                    status == 'Falha de sistema'
+                    and item != 'ValidarVendasLiberadas'
+                ):
+>>>>>>> 286f0fca5436743759c6810d802ddac182e410d8
                     count_system_failure += 1
 
                 scroll_table(driver, base_xpath, row)  # Rola a cada 15 linhas
             except NoSuchElementException:
                 break
 
+<<<<<<< HEAD
         return count_success, count_business_error, count_system_failure, falha_detectada, tme_xpath, tef_xpath, backlog_xpath
 
     except WebDriverException as e:
         print(f"Erro ao coletar informações: {e}")
         return None, None, None, None, None, None, None
+=======
+        return (
+            count_success,
+            count_business_error,
+            count_system_failure,
+            falha_detectada,
+            tme_xpath,
+            tef_xpath,
+            backlog_xpath,
+        )
+
+    except WebDriverException as e:
+        print(f'Erro ao coletar informações: {e}')
+        return None, None, None, None, None, None, None
+
+>>>>>>> 286f0fca5436743759c6810d802ddac182e410d8
 
 # Função para monitorar falhas e enviar mensagens de falha e recuperação
 def monitor_falhas(driver):
     while True:
+<<<<<<< HEAD
         count_success, count_business_error, count_system_failure, falha_detectada, _, _, _ = collect_info(driver)
         
+=======
+        (
+            count_success,
+            count_business_error,
+            count_system_failure,
+            falha_detectada,
+            _,
+            _,
+            _,
+        ) = collect_info(driver)
+
+>>>>>>> 286f0fca5436743759c6810d802ddac182e410d8
         if falha_detectada:
-            send_telegram_message("Falha de sistema\n\nℹ️ Informação: falha ao importar pedidos")
+            send_telegram_message(
+                'Falha de sistema\n\nℹ️ Informação: falha ao importar pedidos'
+            )
             while falha_detectada:
                 time.sleep(60)
                 _, _, _, falha_detectada, _, _, _ = collect_info(driver)
+<<<<<<< HEAD
             send_telegram_message("✅ Robô retomado para produção - MVP1 ✅\n\n⏰ Status: operando normalmente")
         
+=======
+            send_telegram_message(
+                '✅ Robô retomado para produção - MVP1 ✅\n\n⏰ Status: operando normalmente'
+            )
+
+>>>>>>> 286f0fca5436743759c6810d802ddac182e410d8
         time.sleep(60)  # Aguarda um minuto antes de verificar novamente
 
 # Função para enviar mensagens informacionais
 def send_informational_message(driver):
-    count_success, count_business_error, count_system_failure, _, tme_xpath, tef_xpath, backlog_xpath = collect_info(driver)
+    (
+        count_success,
+        count_business_error,
+        count_system_failure,
+        _,
+        tme_xpath,
+        tef_xpath,
+        backlog_xpath,
+    ) = collect_info(driver)
     if count_success is not None:
-        total_processos = count_success + count_business_error + count_system_failure
+        total_processos = (
+            count_success + count_business_error + count_system_failure
+        )
         if total_processos > 0:
             percent_success = (count_success / total_processos) * 100
-            percent_business_error = (count_business_error / total_processos) * 100
-            percent_system_failure = (count_system_failure / total_processos) * 100
+            percent_business_error = (
+                count_business_error / total_processos
+            ) * 100
+            percent_system_failure = (
+                count_system_failure / total_processos
+            ) * 100
         else:
+<<<<<<< HEAD
             percent_success = percent_business_error = percent_system_failure = 0
         
         message = ("🤖 *Automação PAP - MVP1*\n"
@@ -150,58 +280,113 @@ def send_informational_message(driver):
                    f"⏱*Tempo de fila:* {tef_xpath}\n\n"
                    f"🌐*Link para mais detalhes*: https://e-bots.co/grafana/goto/Fj3MALXIR?orgId=1 \n\n"
                    f"🔰 Informacional desenv. - Projetos Tahto Aut/IA 🔰")
+=======
+            percent_success = (
+                percent_business_error
+            ) = percent_system_failure = 0
+
+        message = (
+            '🤖 *Automação PAP - MVP2*\n'
+            f"{datetime.date.today().strftime('%d/%m/%Y')}\n\n"
+            f'*Status do robô*: Operando ✅\n\n'
+            f"📓*Informacional até {datetime.datetime.now().strftime('%Hh%M')}*\n"
+            f'🗂*Backlog*: {backlog_xpath}\n'
+            f'✅*Concluído com sucesso:* {count_success} ({percent_success:.2f}%)\n'
+            f'⚠️*Erro de negócio:* {count_business_error} ({percent_business_error:.2f}%)\n'
+            f'❌*Falha de sistema:* {count_system_failure} ({percent_system_failure:.2f}%)\n\n'
+            f'⏱*Tempo médio de execução:* {tme_xpath}\n'
+            f'⏱*Tempo de fila:* {tef_xpath}\n\n'
+            f'🌐*Link para mais detalhes*: https://e-bots.co/grafana/goto/Fj3MALXIR?orgId=1 \n\n'
+            f'🔰 Informacional desenv. - Projetos Tahto Aut/IA 🔰'
+        )
+>>>>>>> 286f0fca5436743759c6810d802ddac182e410d8
         send_telegram_message(message)
+
 
 # Função para agendar coletas regulares
 def schedule_regular_collections(driver):
-    schedule.every().monday.at("08:05").do(send_informational_message, driver)
-    schedule.every().monday.at("12:05").do(send_informational_message, driver)
-    schedule.every().monday.at("16:05").do(send_informational_message, driver)
-    schedule.every().monday.at("20:05").do(send_informational_message, driver)
+    schedule.every().monday.at('08:05').do(send_informational_message, driver)
+    schedule.every().monday.at('12:05').do(send_informational_message, driver)
+    schedule.every().monday.at('16:05').do(send_informational_message, driver)
+    schedule.every().monday.at('20:05').do(send_informational_message, driver)
 
-    schedule.every().tuesday.at("08:05").do(send_informational_message, driver)
-    schedule.every().tuesday.at("12:05").do(send_informational_message, driver)
-    schedule.every().tuesday.at("16:05").do(send_informational_message, driver)
-    schedule.every().tuesday.at("20:05").do(send_informational_message, driver)
+    schedule.every().tuesday.at('08:05').do(send_informational_message, driver)
+    schedule.every().tuesday.at('12:05').do(send_informational_message, driver)
+    schedule.every().tuesday.at('16:05').do(send_informational_message, driver)
+    schedule.every().tuesday.at('20:05').do(send_informational_message, driver)
 
-    schedule.every().wednesday.at("08:05").do(send_informational_message, driver)
-    schedule.every().wednesday.at("14:38").do(send_informational_message, driver)
-    schedule.every().wednesday.at("16:05").do(send_informational_message, driver)
-    schedule.every().wednesday.at("20:05").do(send_informational_message, driver)
+    schedule.every().wednesday.at('08:05').do(
+        send_informational_message, driver
+    )
+    schedule.every().wednesday.at('14:38').do(
+        send_informational_message, driver
+    )
+    schedule.every().wednesday.at('16:05').do(
+        send_informational_message, driver
+    )
+    schedule.every().wednesday.at('20:05').do(
+        send_informational_message, driver
+    )
 
-    schedule.every().thursday.at("08:05").do(send_informational_message, driver)
-    schedule.every().thursday.at("12:05").do(send_informational_message, driver)
-    schedule.every().thursday.at("16:05").do(send_informational_message, driver)
-    schedule.every().thursday.at("20:05").do(send_informational_message, driver)
+    schedule.every().thursday.at('08:05').do(
+        send_informational_message, driver
+    )
+    schedule.every().thursday.at('12:05').do(
+        send_informational_message, driver
+    )
+    schedule.every().thursday.at('16:05').do(
+        send_informational_message, driver
+    )
+    schedule.every().thursday.at('20:05').do(
+        send_informational_message, driver
+    )
 
-    schedule.every().friday.at("08:05").do(send_informational_message, driver)
-    schedule.every().friday.at("12:05").do(send_informational_message, driver)
-    schedule.every().friday.at("16:05").do(send_informational_message, driver)
-    schedule.every().friday.at("20:05").do(send_informational_message, driver)
+    schedule.every().friday.at('08:05').do(send_informational_message, driver)
+    schedule.every().friday.at('12:05').do(send_informational_message, driver)
+    schedule.every().friday.at('16:05').do(send_informational_message, driver)
+    schedule.every().friday.at('20:05').do(send_informational_message, driver)
 
+<<<<<<< HEAD
     schedule.every().saturday.at("09:05").do(send_informational_message, driver)
     schedule.every().saturday.at("12:05").do(send_informational_message, driver)
     schedule.every().saturday.at("15:55").do(send_informational_message, driver)
+=======
+    schedule.every().saturday.at('09:05').do(
+        send_informational_message, driver
+    )
+    schedule.every().saturday.at('12:05').do(
+        send_informational_message, driver
+    )
+    schedule.every().saturday.at('15:55').do(
+        send_informational_message, driver
+    )
+
+>>>>>>> 286f0fca5436743759c6810d802ddac182e410d8
 
 # Função principal
 def main():
     driver = start_browser()
     authenticate(driver, email, password)
     schedule_regular_collections(driver)
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> 286f0fca5436743759c6810d802ddac182e410d8
     # Iniciar monitoramento de falhas em uma thread separada
     falhas_thread = threading.Thread(target=monitor_falhas, args=(driver,))
     falhas_thread.daemon = True
     falhas_thread.start()
-    
+
     while True:
         schedule.run_pending()
         time.sleep(1)
 
+
 # Credenciais de login
-email = 'guilherme.caseiro@tahto.com.br'  
-password = 'C453iro@102030.'  
+email = 'guilherme.caseiro@tahto.com.br'
+password = 'C453iro@102030.'
 
 # Executa a função principal
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

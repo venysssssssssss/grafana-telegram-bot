@@ -13,7 +13,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 # Função para iniciar o navegador Edge
 def start_browser():
     service = Service(
-        'edge/msedgedriver.exe'
+        'edge/msedgedriver'
     )  # Substitua pelo caminho correto do EdgeDriver
     options = webdriver.EdgeOptions()
     driver = webdriver.Edge(service=service, options=options)
@@ -23,7 +23,7 @@ def start_browser():
 
 # Função para autenticar no site
 def authenticate(driver, email, password):
-    login_url = 'https://e-bots.co/grafana/d/b12d0f69-2249-46c9-9a3d-da56588d47f4/ebots-detalhe-do-robo?var-Robot=tahto-pap-mvp2&orgId=1&refresh=5m&var-Robot_id=82&var-exibir_itens=processados&var-exibir=100&var-exibir_tarefas=todas'
+    login_url = 'https://e-bots.co/grafana/d/b12d0f69-2249-46c9-9a3d-da56588d47f4/ebots-detalhe-do-robo?var-Robot=tahto-pap-mvp2&orgId=1&refresh=5m&var-Robot_id=82&var-exibir_itens=processados&var-exibir=10000&var-exibir_tarefas=todas'
     driver.get(login_url)
     time.sleep(5)
 
@@ -106,7 +106,7 @@ def scroll_table_to_bottom(driver):
     all_data = []
     total_rows_counted = 0  # Inicializa o contador de linhas
 
-    for _ in range(100):  # Realiza a rolagem 3 vezes
+    for _ in range(4):  # Realiza a rolagem 3 vezes
         try:
             # Espera até que o elemento do scrollbar esteja visível
             scrollbar = WebDriverWait(driver, 10).until(
@@ -119,7 +119,11 @@ def scroll_table_to_bottom(driver):
 
             # Move o scrollbar para baixo
             action.move_by_offset(
+<<<<<<< HEAD
                 0, 20
+=======
+                0, 100
+>>>>>>> 286f0fca5436743759c6810d802ddac182e410d8
             ).perform()  # Ajuste este valor conforme necessário
             action.release().perform()
 
@@ -131,18 +135,30 @@ def scroll_table_to_bottom(driver):
                 new_rows_count  # Atualiza o contador total de linhas
             )
 
+<<<<<<< HEAD
             # Coleta as informações das novas linhas
+=======
+>>>>>>> 286f0fca5436743759c6810d802ddac182e410d8
             for row in range(
                 total_rows_counted - new_rows_count + 1, total_rows_counted + 1
             ):
                 try:
+<<<<<<< HEAD
                     item_xpath = f'{base_xpath}[{row+1}]/div[3]'
                     status_xpath = f'{base_xpath}[{row+1}]/div[7]'
+=======
+                    rows = driver.find_elements(By.XPATH, f'{base_xpath}')
+                    rows += rows
+                    item_xpath = f'{base_xpath}[{row}]/div[3]'
+                    status_xpath = f'{base_xpath}[{row}]/div[7]'
+>>>>>>> 286f0fca5436743759c6810d802ddac182e410d8
 
                     item = driver.find_element(By.XPATH, item_xpath).text
                     status = driver.find_element(By.XPATH, status_xpath).text
-
+                    time.sleep(1)
                     all_data.append({'item': item, 'status': status})
+                    print(len(rows))
+                    print(len(all_data))
                 except NoSuchElementException:
                     continue
 
