@@ -23,7 +23,7 @@ def start_browser():
 
 # Função para autenticar no site
 def authenticate(driver, email, password):
-    login_url = 'https://e-bots.co/grafana/d/b12d0f69-2249-46c9-9a3d-da56588d47f4/ebots-detalhe-do-robo?var-Robot=tahto-pap-mvp2&orgId=1&refresh=5m&var-Robot_id=82&var-exibir_itens=processados&var-exibir=100&var-exibir_tarefas=todas'
+    login_url = 'https://e-bots.co/grafana/d/b12d0f69-2249-46c9-9a3d-da56588d47f4/ebots-detalhe-do-robo?orgId=1&refresh=5m&var-Robot=tahto-pap&var-Robot_id=51&var-exibir_itens=processados&var-exibir=10000&var-exibir_tarefas=todas'
     driver.get(login_url)
     time.sleep(5)
 
@@ -54,24 +54,8 @@ def authenticate(driver, email, password):
 
 
 # Função para rolar a página até o final usando o scrollbar
-def scroll_to_bottom(driver):
+def scroll_page_to_table(driver):
     try:
-        wait_for_element_and_click(
-            driver,
-            '//*[@id="reactRoot"]/div[1]/div/div[1]/div[2]/div[2]/div[4]/div/div[1]/button[1]',
-        )
-        wait_for_element_and_click(
-            driver, '//*[@id="TimePickerContent"]/div/div/div[1]/div/div/input'
-        )
-        send_keys_to_element(
-            driver,
-            '//*[@id="TimePickerContent"]/div/div/div[1]/div/div/input',
-            '1',
-        )
-        wait_for_element_and_click(
-            driver,
-            '//*[@id="TimePickerContent"]/div/div/div[2]/div[1]/ul/li[4]/label',
-        )
 
         scrollbar = driver.find_element(
             By.XPATH, '//*[@id="pageContent"]/div[3]/div/div[3]/div'
@@ -102,53 +86,57 @@ def scroll_to_bottom(driver):
         new_height = driver.execute_script('return document.body.scrollHeight')
 
 
-def scroll_table_to_bottom(driver):
+def scroll_table_down(driver):
+    # Identifica o elemento scrollbar na página
+    scrollbar = WebDriverWait(driver, 10).until(
+        EC.visibility_of_element_located(
+            (By.XPATH, '//*[@id=":rl:"]/div/div/div[3]/div')
+        )
+    )
+    action = ActionChains(driver)
+    total_rows = 0
+
+    # Começa a rolagem
+    while True:
+        initial_rows = len(
+            driver.find_elements(
+                By.XPATH, '//*[@id=":rl:"]/div/div/div[3]/div/div/div/div'
+            )
+        )  # Ajuste o XPath para as linhas da tabela
+        action.click_and_hold(scrollbar).perform()
+        action.move_by_offset(
+            0, 100
+        ).release().perform()  # A rolagem é realizada de forma controlada
+        time.sleep(1)  # Espera o carregamento de novas linhas
+
+        # Verifica se novas linhas foram carregadas
+        new_rows = len(
+            driver.find_elements(
+                By.XPATH, '//*[@id=":rl:"]/div/div/div[3]/div/div/div/div'
+            )
+        )
+        if new_rows == initial_rows:
+            break  # Para a rolagem quando não há novas linhas
+        total_rows = new_rows
+
+
+def extract_table_data(driver):
     all_data = []
-    total_rows_counted = 0  # Inicializa o contador de linhas
+    scroll_table_down(driver)  # Rola a tabela para carregar todas as linhas
+    rows = driver.find_elements(
+        By.XPATH, '//*[@id=":rl:"]/div/div/div[3]/div/div/div/div'
+    )  # Ajuste o XPath para as linhas da tabela
 
-    for _ in range(100):  # Realiza a rolagem 3 vezes
-        try:
-            # Espera até que o elemento do scrollbar esteja visível
-            scrollbar = WebDriverWait(driver, 10).until(
-                EC.visibility_of_element_located(
-                    (By.XPATH, '//*[@id=":rm:"]/div/div/div[3]/div')
-                )
-            )
-            action = ActionChains(driver)
-            action.click_and_hold(scrollbar).perform()
-
-            # Move o scrollbar para baixo
-            action.move_by_offset(
-                0, 20
-            ).perform()  # Ajuste este valor conforme necessário
-            action.release().perform()
-
-            # Coletar dados após cada rolagem
-            base_xpath = '/html/body/div[1]/div[1]/div/main/div/div/div[3]/div/div[1]/div/div/div[1]/div/div/div[8]/div/div/div[3]/div/div/div[1]/div/div[2]/div/div[1]/div/div/div'
-            rows = driver.find_elements(By.XPATH, f'{base_xpath}/div[3]')
-            new_rows_count = len(rows) - total_rows_counted
-            total_rows_counted += (
-                new_rows_count  # Atualiza o contador total de linhas
-            )
-
-            # Coleta as informações das novas linhas
-            for row in range(
-                total_rows_counted - new_rows_count + 1, total_rows_counted + 1
-            ):
-                try:
-                    item_xpath = f'{base_xpath}[{row+1}]/div[3]'
-                    status_xpath = f'{base_xpath}[{row+1}]/div[7]'
-
-                    item = driver.find_element(By.XPATH, item_xpath).text
-                    status = driver.find_element(By.XPATH, status_xpath).text
-
-                    all_data.append({'item': item, 'status': status})
-                except NoSuchElementException:
-                    continue
-
-        except TimeoutException as e:
-            print(f'Tempo esgotado ao esperar pelo scrollbar: {e}')
-            break
+    for i, row in enumerate(rows):
+        # Supõe que cada linha tenha um item e um status em colunas específicas
+        item = row.find_element(
+            By.XPATH, '/div[3]'
+        ).text  # Ajuste o XPath relativo para o item
+        status = row.find_element(
+            By.XPATH, ' /div[7]'
+        ).text  # Ajuste o XPath relativo para o status
+        all_data.append({'item': item, 'status': status})
+        print(f'Processando linha {i + 1}: Item - {item}, Status - {status}')
 
     return all_data
 
@@ -156,7 +144,7 @@ def scroll_table_to_bottom(driver):
 # Função para coletar informações do site
 def collect_info(driver):
     try:
-        all_data = scroll_table_to_bottom(driver)
+        all_data = extract_table_data(driver)
         total_rows = len(all_data)
 
         base_xpath = '/html/body/div[1]/div[1]/div/main/div/div/div[3]/div/div[1]/div/div/div[1]/div/div/div[8]/div/div/div[3]/div/div/div[1]/div/div[2]/div/div[1]/div/div/div'
@@ -252,7 +240,7 @@ def main():
     authenticate(driver, email, password)
 
     # Rolar a página inteira e a tabela interna até o final após a autenticação
-    scroll_to_bottom(driver)
+    scroll_page_to_table(driver)
     time.sleep(1)
 
     # Coletar informações e imprimir a quantidade de linhas processadas
