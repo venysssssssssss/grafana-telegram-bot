@@ -16,7 +16,7 @@ class BrowserManager:
         self.driver = self.start_browser(self.download_directory)
 
     def start_browser(self, download_path):
-        driver_path = os.path.exists('edge\chromedriver.exe')
+        driver_path = os.path.exists('edge\chromedriver')
     
         service = Service(driver_path)
         options = webdriver.ChromeOptions()
