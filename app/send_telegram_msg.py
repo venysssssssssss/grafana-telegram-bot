@@ -25,7 +25,7 @@ def send_informational_message(metrics, tme_xpath, tef_xpath, backlog_xpath):
             percent_success = percent_business_error = percent_system_failure = 0
 
         message = (
-            '🤖 *Automação PAP - MVP2*\n'
+            '🤖 *Automação PAP - MVP1*\n'
             f"{datetime.date.today().strftime('%d/%m/%Y')}\n\n"
             f'*Status do robô*: Operando ✅\n\n'
             f"📓*Informacional até {datetime.datetime.now().strftime('%Hh%M')}*\n"
@@ -35,9 +35,11 @@ def send_informational_message(metrics, tme_xpath, tef_xpath, backlog_xpath):
             f'❌*Falha de sistema:* {count_system_failure} ({percent_system_failure:.2f}%)\n\n'
             f'⏱*Tempo médio de execução:* {tme_xpath}\n'
             f'⏱*Tempo de fila:* {tef_xpath}\n\n'
-            f'🌐*Link para mais detalhes*: https://e-bots.co/grafana/goto/Fj3MALXIR?orgId=1 \n\n'
+            f'🌐*Link para mais detalhes*: https://e-bots.co/grafana/goto/2BJnrGrSR?orgId=1 \n\n'
             f'🔰 Informacional desenv. - Projetos Tahto Aut/IA 🔰'
         )
-        # send_telegram_message(message)
+        send_telegram_message(message)
+        if send_informational_message:
+            return 'Enviado com sucesso'
         print(message)
 

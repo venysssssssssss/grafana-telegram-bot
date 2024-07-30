@@ -1,4 +1,7 @@
 # Função para agendar coletas regulares
+import schedule
+from send_telegram_msg import send_informational_message
+
 def schedule_regular_collections(driver):
     schedule.every().monday.at('08:05').do(send_informational_message, driver)
     schedule.every().monday.at('12:05').do(send_informational_message, driver)
