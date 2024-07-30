@@ -1,12 +1,10 @@
 import os
 import shutil
 import time
-
 from selenium import webdriver
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
-
 
 class BrowserManager:
     def __init__(self, download_directory):
@@ -16,10 +14,16 @@ class BrowserManager:
         self.driver = self.start_browser(self.download_directory)
 
     def start_browser(self, download_path):
-        driver_path = os.path.exists('edge\chromedriver')
-    
+        driver_path = os.path.exists('edge/chromedriver')  # Corrigido caminho
+
         service = Service(driver_path)
         options = webdriver.ChromeOptions()
+        options.add_argument('--headless')  # Adicionado modo headless
+        options.add_argument('--no-sandbox')  # Adicionado para evitar problemas de sandbox
+        options.add_argument('--disable-dev-shm-usage')  # Adicionado para evitar problemas de memória compartilhada
+        options.add_argument('--disable-gpu')  # Adicionado para evitar problemas com GPU
+        options.add_argument('--window-size=1366,768')  # Tamanho da janela
+
         options.add_experimental_option(
             'prefs',
             {
@@ -30,7 +34,6 @@ class BrowserManager:
             },
         )
         driver = webdriver.Chrome(service=service, options=options)
-        driver.set_window_size(1366, 768)
         return driver
 
     def scroll_to_table(self):
@@ -44,7 +47,7 @@ class BrowserManager:
                 action.move_by_offset(0, 42).perform()
                 time.sleep(0.1)
             action.release().perform()
-        except NoSuchElementException as e:   # type: ignore
+        except NoSuchElementException as e: # type: ignore
             print(f'Erro ao encontrar o scrollbar: {e}')
             last_height = self.driver.execute_script(
                 'return document.body.scrollHeight'
