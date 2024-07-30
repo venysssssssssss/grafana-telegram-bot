@@ -4,6 +4,7 @@ from action_manager import ActionManager
 from authentication import Authenticator
 from browser import BrowserManager
 from data_processing import DataProcessor
+from monitor_falhas import monitor_falhas
 from send_telegram_msg import send_informational_message
 from selenium.webdriver.common.by import By
 
@@ -52,7 +53,7 @@ def main():
 
     send_informational_message(metrics, tme_xpath, tef_xpath, backlog_xpath)
 
-    time.sleep(500)
+    monitor_falhas(browser_manager.driver)
     browser_manager.driver.quit()
 
 
