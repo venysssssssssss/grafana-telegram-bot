@@ -1,10 +1,12 @@
 import os
 import shutil
 import time
+
 from selenium import webdriver
-from selenium.webdriver.edge.service import Service
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
+from selenium.webdriver.edge.service import Service
+
 
 class BrowserManager:
     def __init__(self, download_directory):
@@ -14,36 +16,51 @@ class BrowserManager:
         self.driver = self.start_browser(self.download_directory)
 
     def start_browser(self, download_path):
-        service = Service('edge/msedgedriver.exe')
+        driver_path = (
+            'edge/msedgedriver.exe'
+            if os.path.exists('edge/msedgedriver.exe')
+            else 'edge/msedgedriver'
+        )
+        service = Service(driver_path)
         options = webdriver.EdgeOptions()
-        options.add_experimental_option('prefs', {
-            'download.default_directory': download_path,
-            'download.prompt_for_download': False,
-            'download.directory_upgrade': True,
-            'safebrowsing.enabled': True,
-        })
+        options.add_experimental_option(
+            'prefs',
+            {
+                'download.default_directory': download_path,
+                'download.prompt_for_download': False,
+                'download.directory_upgrade': True,
+                'safebrowsing.enabled': True,
+            },
+        )
         driver = webdriver.Edge(service=service, options=options)
         driver.set_window_size(1366, 768)
         return driver
 
-
     def scroll_to_table(self):
         try:
-            scrollbar = self.driver.find_element(By.XPATH, '//*[@id="pageContent"]/div[3]/div/div[3]/div')
+            scrollbar = self.driver.find_element(
+                By.XPATH, '//*[@id="pageContent"]/div[3]/div/div[3]/div'
+            )
             action = ActionChains(self.driver)
             action.click_and_hold(scrollbar).perform()
             for _ in range(6):
                 action.move_by_offset(0, 42).perform()
                 time.sleep(0.1)
             action.release().perform()
-        except NoSuchElementException as e: # type: ignore
+        except NoSuchElementException as e:   # type: ignore
             print(f'Erro ao encontrar o scrollbar: {e}')
-            last_height = self.driver.execute_script('return document.body.scrollHeight')
+            last_height = self.driver.execute_script(
+                'return document.body.scrollHeight'
+            )
             new_height = last_height
             while new_height == last_height:
-                self.driver.execute_script('window.scrollTo(0, document.body.scrollHeight);')
+                self.driver.execute_script(
+                    'window.scrollTo(0, document.body.scrollHeight);'
+                )
                 time.sleep(2)
-                new_height = self.driver.execute_script('return document.body.scrollHeight')
+                new_height = self.driver.execute_script(
+                    'return document.body.scrollHeight'
+                )
 
     def clean_download_directory(self, directory):
         download_path = os.path.join(os.getcwd(), directory)
@@ -56,16 +73,24 @@ class BrowserManager:
             elif os.path.isdir(file_path):
                 shutil.rmtree(file_path)
         return download_path
-    
-    
+
     def wait_for_download_complete(self, download_path, timeout=60):
         start_time = time.time()
         while True:
-            files = [f for f in os.listdir(download_path) if not f.endswith('.crdownload')]
+            files = [
+                f
+                for f in os.listdir(download_path)
+                if not f.endswith('.crdownload')
+            ]
             if files:
-                return max([os.path.join(download_path, f) for f in files], key=os.path.getctime)
+                return max(
+                    [os.path.join(download_path, f) for f in files],
+                    key=os.path.getctime,
+                )
             elif time.time() - start_time > timeout:
-                raise TimeoutError("Timed out waiting for the file to download.")
+                raise TimeoutError(
+                    'Timed out waiting for the file to download.'
+                )
             time.sleep(1)  # Verifica a cada segundo
 
     def rename_latest_file(self, download_path, new_name):
@@ -76,7 +101,3 @@ class BrowserManager:
             os.rename(latest_file, new_path)
         else:
             raise ValueError(f'Unexpected file type: {ext}')
-
-
-
-
