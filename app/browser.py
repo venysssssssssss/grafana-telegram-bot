@@ -14,7 +14,7 @@ class BrowserManager:
         self.driver = self.start_browser(self.download_directory)
 
     def start_browser(self, download_path):
-        driver_path = os.path.exists('edge/chromedriver')  # Corrigido caminho
+        driver_path = os.path.join(os.getcwd(), '/usr/local/bin/chromedriver')  # Corrigido caminho absoluto para o chromedriver
 
         service = Service(driver_path)
         options = webdriver.ChromeOptions()
