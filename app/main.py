@@ -21,6 +21,7 @@ def main():
     actions.click_element('//*[@id="reactRoot"]/div[1]/div/div[3]/div[3]/div/div/div[2]/div[1]/div/div/div[1]/div/div/div[1]/div[2]/button')
 
     # Aguarda o download ser concluído
+    browser_manager.wait_for_download_complete(download_path)
     browser_manager.rename_latest_file(download_path, 'relatorio.csv')
 
     data_processor = DataProcessor(os.path.join(download_path, 'relatorio.csv'))
