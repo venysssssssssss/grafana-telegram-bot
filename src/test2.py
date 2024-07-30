@@ -119,11 +119,8 @@ def scroll_table_to_bottom(driver):
 
             # Move o scrollbar para baixo
             action.move_by_offset(
-<<<<<<< HEAD
                 0, 20
-=======
                 0, 100
->>>>>>> 286f0fca5436743759c6810d802ddac182e410d8
             ).perform()  # Ajuste este valor conforme necessário
             action.release().perform()
 
