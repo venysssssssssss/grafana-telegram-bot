@@ -1,5 +1,7 @@
-import requests
 import datetime
+
+import requests
+
 
 def send_telegram_message(message):
     telegram_token = '7226155746:AAEBPeOtzJrD_KQyeZinNBjh5HMmvHTBZLs'  # Substitua pelo token do seu bot do Telegram
@@ -7,6 +9,7 @@ def send_telegram_message(message):
     url = f'https://api.telegram.org/bot{telegram_token}/sendMessage'
     payload = {'chat_id': chat_id, 'text': message, 'parse_mode': 'Markdown'}
     requests.post(url, data=payload)
+
 
 # Função para enviar mensagens informacionais
 def send_informational_message(metrics, tme_xpath, tef_xpath, backlog_xpath):
@@ -16,13 +19,21 @@ def send_informational_message(metrics, tme_xpath, tef_xpath, backlog_xpath):
     falha_detectada = metrics['falha_detectada']
 
     if count_success is not None:
-        total_processos = count_success + count_business_error + count_system_failure
+        total_processos = (
+            count_success + count_business_error + count_system_failure
+        )
         if total_processos > 0:
             percent_success = (count_success / total_processos) * 100
-            percent_business_error = (count_business_error / total_processos) * 100
-            percent_system_failure = (count_system_failure / total_processos) * 100
+            percent_business_error = (
+                count_business_error / total_processos
+            ) * 100
+            percent_system_failure = (
+                count_system_failure / total_processos
+            ) * 100
         else:
-            percent_success = percent_business_error = percent_system_failure = 0
+            percent_success = (
+                percent_business_error
+            ) = percent_system_failure = 0
 
         message = (
             '🤖 *Automação PAP - MVP1*\n'
@@ -40,6 +51,5 @@ def send_informational_message(metrics, tme_xpath, tef_xpath, backlog_xpath):
         )
         send_telegram_message(message)
         if send_informational_message:
-            return 'Enviado com sucesso'
+            print('Mensagem enviada com sucesso!')
         print(message)
-

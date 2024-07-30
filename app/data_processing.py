@@ -1,6 +1,7 @@
 import duckdb
 import pandas as pd
 
+
 class DataProcessor:
     def __init__(self, file_path):
         self.file_path = file_path

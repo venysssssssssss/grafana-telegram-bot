@@ -1,12 +1,14 @@
 import os
 import time
+
 from action_manager import ActionManager
 from authentication import Authenticator
 from browser import BrowserManager
 from data_processing import DataProcessor
 from monitor_falhas import monitor_falhas
-from send_telegram_msg import send_informational_message
 from selenium.webdriver.common.by import By
+from send_telegram_msg import send_informational_message
+
 
 def main():
     browser_manager = BrowserManager('data')
@@ -15,17 +17,21 @@ def main():
     auth = Authenticator(browser_manager.driver)
     auth.authenticate()
     # Collect additional KPIs
-    tme_xpath = actions.find_element(
+    actions.click_element('//*[@id="var-exibir"]')
+    actions.click_element('//*[@id="options-exibir"]/li[4]/button')
+    tme_element = actions.find_element(
         '/html/body/div[1]/div[1]/div/main/div/div/div[3]/div/div[1]/div/div/div[1]/div/div/div[5]/div/div/div[3]/div/div/div/div/div/div/span'
-    ).text
-    tef_xpath = actions.find_element(
+    )
+    tme_xpath = tme_element.text if tme_element.text != 'No data' else '00:00:00'
+    
+    tef_element = actions.find_element(
         '/html/body/div[1]/div[1]/div/main/div/div/div[3]/div/div[1]/div/div/div[1]/div/div/div[6]/div/div/div[3]/div/div/div/div/div/div/span'
-    ).text
+    )
+    tef_xpath = tef_element.text if tef_element.text != 'No data' else '00:00:00'
     backlog_xpath = actions.find_element(
         '/html/body/div[1]/div[1]/div/main/div/div/div[3]/div/div[1]/div/div/div[1]/div/div/div[1]/div/div/div[3]/div/div/div/div/div/div/span'
     ).text
     browser_manager.scroll_to_table()
-    
 
     actions.move_to_and_interact('//*[@id=":rl:"]', 'i')
     actions.click_element(
@@ -33,6 +39,9 @@ def main():
     )
     actions.click_element(
         '//*[@id="reactRoot"]/div[1]/div/div[3]/div[3]/div/div/div[2]/div[1]/div/div/div[1]/div/div/div[2]/div/div/div/div/div[3]/div/div[2]/div/div/label'
+    )
+    actions.click_element(
+        '//*[@id="reactRoot"]/div[1]/div/div[3]/div[3]/div/div/div[2]/div[1]/div/div/div[1]/div/div/div[2]/div/div/div/div/div[1]/div/div[2]/div/div/label'
     )
     actions.click_element(
         '//*[@id="reactRoot"]/div[1]/div/div[3]/div[3]/div/div/div[2]/div[1]/div/div/div[1]/div/div/div[1]/div[2]/button'

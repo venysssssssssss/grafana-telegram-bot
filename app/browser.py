@@ -16,11 +16,8 @@ class BrowserManager:
         self.driver = self.start_browser(self.download_directory)
 
     def start_browser(self, download_path):
-        driver_path = (
-            'edge/msedgedriver.exe'
-            if os.path.exists('edge/msedgedriver.exe')
-            else 'edge/msedgedriver'
-        )
+        driver_path = os.path.exists('/usr/local/share/webdriver/msedgedriver')
+    
         service = Service(driver_path)
         options = webdriver.EdgeOptions()
         options.add_experimental_option(
