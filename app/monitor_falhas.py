@@ -8,7 +8,7 @@ from selenium import webdriver
 from selenium.common.exceptions import (NoSuchElementException,
                                         WebDriverException)
 from selenium.webdriver.common.by import By
-from selenium.webdriver.edge.service import Service
+from selenium.webdriver.chrome.service import Service
 from send_telegram_msg import send_telegram_message
 
 

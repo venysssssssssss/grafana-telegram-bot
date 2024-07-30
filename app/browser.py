@@ -5,7 +5,7 @@ import time
 from selenium import webdriver
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
-from selenium.webdriver.edge.service import Service
+from selenium.webdriver.chrome.service import Service
 
 
 class BrowserManager:
@@ -16,10 +16,10 @@ class BrowserManager:
         self.driver = self.start_browser(self.download_directory)
 
     def start_browser(self, download_path):
-        driver_path = os.path.exists('/usr/local/share/webdriver/msedgedriver')
+        driver_path = os.path.exists('edge\chromedriver.exe')
     
         service = Service(driver_path)
-        options = webdriver.EdgeOptions()
+        options = webdriver.ChromeOptions()
         options.add_experimental_option(
             'prefs',
             {
@@ -29,7 +29,7 @@ class BrowserManager:
                 'safebrowsing.enabled': True,
             },
         )
-        driver = webdriver.Edge(service=service, options=options)
+        driver = webdriver.Chrome(service=service, options=options)
         driver.set_window_size(1366, 768)
         return driver
 
