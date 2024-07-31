@@ -3,12 +3,8 @@ import os
 import requests
 import logging
 import traceback
-from data_processing import DataProcessor
-from browser import BrowserManager
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-browser_manager = BrowserManager('data')
-download_path = browser_manager.clean_download_directory('data')
 
 def send_telegram_message(message):
     telegram_token = os.getenv('TELEGRAM_TOKEN', '7226155746:AAEBPeOtzJrD_KQyeZinNBjh5HMmvHTBZLs')
@@ -28,11 +24,7 @@ def send_telegram_message(message):
 
 def send_informational_message(driver, tme_xpath, tef_xpath, backlog_xpath):
     try:
-        data_processor = DataProcessor(
-            os.path.join(download_path, 'relatorio.csv')
-        )
-        metrics = data_processor.analyze_data()
-        print('Returned metrics:', metrics)  # Supondo que o objeto driver contém o dicionário de métricas
+        metrics = driver.metrics  # Supondo que o objeto driver contém o dicionário de métricas
         count_success = metrics.get('count_success', 0)
         count_business_error = metrics.get('count_business_error', 0)
         count_system_failure = metrics.get('count_system_failure', 0)
@@ -48,14 +40,14 @@ def send_informational_message(driver, tme_xpath, tef_xpath, backlog_xpath):
         message = (
             f'🤖 *Automação PAP - MVP1*\n{datetime.date.today().strftime("%d/%m/%Y")}\n\n'
             f'*Status do robô*: Operando ✅\n\n'
-            f'📓*Informacional até {datetime.datetime.now().strftime("%Hh%M")}*\n'
-            f'🗂*Backlog*: {backlog_xpath}\n'
-            f'✅*Concluído com sucesso:* {count_success} ({percent_success:.2f}%)\n'
-            f'⚠️*Erro de negócio:* {count_business_error} ({percent_business_error:.2f}%)\n'
-            f'❌*Falha de sistema:* {count_system_failure} ({percent_system_failure:.2f}%)\n'
-            f'⏱*Tempo médio de execução:* {tme_xpath}\n'
-            f'⏱*Tempo de fila:* {tef_xpath}\n'
-            f'🌐*Link para mais detalhes*: https://e-bots.co/grafana/goto/2BJnrGrSR?orgId=1\n'
+            f'📓*Informacional até {datetime.datetime.now().strftime("%Hh%M")}*\n\n'
+            f'🗂*Backlog*: {backlog_xpath}\n\n'
+            f'✅*Concluído com sucesso:* {count_success} ({percent_success:.2f}%)\n\n'
+            f'⚠️*Erro de negócio:* {count_business_error} ({percent_business_error:.2f}%)\n\n'
+            f'❌*Falha de sistema:* {count_system_failure} ({percent_system_failure:.2f}%)\n\n'
+            f'⏱*Tempo médio de execução:* {tme_xpath}\n\n'
+            f'⏱*Tempo de fila:* {tef_xpath}\n\n'
+            f'🌐*Link para mais detalhes*: https://e-bots.co/grafana/goto/2BJnrGrSR?orgId=1\n\n'
             f'🔰 Informacional desenv. - Projetos Tahto Aut/IA 🔰'
         )
         send_telegram_message(message)
