@@ -1,55 +1,66 @@
 import datetime
-
+import os
 import requests
+import logging
+import traceback
+from data_processing import DataProcessor
+from browser import BrowserManager
 
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+browser_manager = BrowserManager('data')
+download_path = browser_manager.clean_download_directory('data')
 
 def send_telegram_message(message):
-    telegram_token = '7226155746:AAEBPeOtzJrD_KQyeZinNBjh5HMmvHTBZLs'  # Substitua pelo token do seu bot do Telegram
-    chat_id = '-1002165188451'  # Substitua pelo seu chat ID
+    telegram_token = os.getenv('TELEGRAM_TOKEN', '7226155746:AAEBPeOtzJrD_KQyeZinNBjh5HMmvHTBZLs')
+    chat_id = os.getenv('TELEGRAM_CHAT_ID', '-1002165188451')
     url = f'https://api.telegram.org/bot{telegram_token}/sendMessage'
     payload = {'chat_id': chat_id, 'text': message, 'parse_mode': 'Markdown'}
-    requests.post(url, data=payload)
+    
+    try:
+        response = requests.post(url, data=payload)
+        response.raise_for_status()
+        logging.info("Mensagem enviada com sucesso!")
+    except requests.HTTPError as e:
+        logging.error(f"HTTP error occurred: {e.response.status_code} - {e.response.text}")
+        traceback.print_exc()
+    except requests.RequestException as e:
+        logging.exception("Erro ao enviar mensagem: %s", e)
 
-
-# Função para enviar mensagens informacionais
-def send_informational_message(metrics, tme_xpath, tef_xpath, backlog_xpath):
-    count_success = metrics['count_success']
-    count_business_error = metrics['count_business_error']
-    count_system_failure = metrics['count_system_failure']
-    falha_detectada = metrics['falha_detectada']
-
-    if count_success is not None:
-        total_processos = (
-            count_success + count_business_error + count_system_failure
+def send_informational_message(driver, tme_xpath, tef_xpath, backlog_xpath):
+    try:
+        data_processor = DataProcessor(
+            os.path.join(download_path, 'relatorio.csv')
         )
+        metrics = data_processor.analyze_data()
+        print('Returned metrics:', metrics)  # Supondo que o objeto driver contém o dicionário de métricas
+        count_success = metrics.get('count_success', 0)
+        count_business_error = metrics.get('count_business_error', 0)
+        count_system_failure = metrics.get('count_system_failure', 0)
+        total_processos = count_success + count_business_error + count_system_failure
+
         if total_processos > 0:
             percent_success = (count_success / total_processos) * 100
-            percent_business_error = (
-                count_business_error / total_processos
-            ) * 100
-            percent_system_failure = (
-                count_system_failure / total_processos
-            ) * 100
+            percent_business_error = (count_business_error / total_processos) * 100
+            percent_system_failure = (count_system_failure / total_processos) * 100
         else:
-            percent_success = (
-                percent_business_error
-            ) = percent_system_failure = 0
+            percent_success = percent_business_error = percent_system_failure = 0
 
         message = (
-            '🤖 *Automação PAP - MVP1*\n'
-            f"{datetime.date.today().strftime('%d/%m/%Y')}\n\n"
+            f'🤖 *Automação PAP - MVP1*\n{datetime.date.today().strftime("%d/%m/%Y")}\n\n'
             f'*Status do robô*: Operando ✅\n\n'
-            f"📓*Informacional até {datetime.datetime.now().strftime('%Hh%M')}*\n"
+            f'📓*Informacional até {datetime.datetime.now().strftime("%Hh%M")}*\n'
             f'🗂*Backlog*: {backlog_xpath}\n'
             f'✅*Concluído com sucesso:* {count_success} ({percent_success:.2f}%)\n'
             f'⚠️*Erro de negócio:* {count_business_error} ({percent_business_error:.2f}%)\n'
-            f'❌*Falha de sistema:* {count_system_failure} ({percent_system_failure:.2f}%)\n\n'
+            f'❌*Falha de sistema:* {count_system_failure} ({percent_system_failure:.2f}%)\n'
             f'⏱*Tempo médio de execução:* {tme_xpath}\n'
-            f'⏱*Tempo de fila:* {tef_xpath}\n\n'
-            f'🌐*Link para mais detalhes*: https://e-bots.co/grafana/goto/2BJnrGrSR?orgId=1 \n\n'
+            f'⏱*Tempo de fila:* {tef_xpath}\n'
+            f'🌐*Link para mais detalhes*: https://e-bots.co/grafana/goto/2BJnrGrSR?orgId=1\n'
             f'🔰 Informacional desenv. - Projetos Tahto Aut/IA 🔰'
         )
         send_telegram_message(message)
-        if send_informational_message:
-            print('Mensagem enviada com sucesso!')
-        print(message)
+        logging.info("Mensagem processada e enviada com sucesso!")
+    except KeyError as e:
+        logging.exception("Chave ausente nos dados: %s", e)
+    except Exception as e:
+        logging.exception("Erro inesperado ao enviar mensagem informativa: %s", e)
