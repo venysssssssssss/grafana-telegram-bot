@@ -3,8 +3,12 @@ import os
 import requests
 import logging
 import traceback
+from data_processing import DataProcessor
+from browser import BrowserManager
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+browser_manager = BrowserManager('data')
+download_path = browser_manager.clean_download_directory('data')
 
 def send_telegram_message(message):
     telegram_token = os.getenv('TELEGRAM_TOKEN', '7226155746:AAEBPeOtzJrD_KQyeZinNBjh5HMmvHTBZLs')
@@ -24,7 +28,11 @@ def send_telegram_message(message):
 
 def send_informational_message(driver, tme_xpath, tef_xpath, backlog_xpath):
     try:
-        metrics = driver.metrics  # Supondo que o objeto driver contém o dicionário de métricas
+        data_processor = DataProcessor(
+            os.path.join(download_path, 'relatorio.csv')
+        )
+        metrics = data_processor.analyze_data()
+        print('Returned metrics:', metrics)  # Supondo que o objeto driver contém o dicionário de métricas
         count_success = metrics.get('count_success', 0)
         count_business_error = metrics.get('count_business_error', 0)
         count_system_failure = metrics.get('count_system_failure', 0)
