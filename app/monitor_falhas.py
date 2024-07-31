@@ -1,16 +1,13 @@
 import datetime
 import threading
 import time
-
-import requests
-import schedule
 from selenium import webdriver
 from selenium.common.exceptions import (NoSuchElementException,
                                         WebDriverException)
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 from send_telegram_msg import send_telegram_message
-from schedule import schedule_regular_collections
+from schedule_regular import schedule_regular_collections
 
 # Função para coletar informações do site
 def collect_info(driver):
