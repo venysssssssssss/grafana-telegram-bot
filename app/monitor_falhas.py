@@ -10,12 +10,13 @@ from selenium.common.exceptions import (NoSuchElementException,
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 from send_telegram_msg import send_telegram_message
-
+from schedule import schedule_regular_collections
 
 # Função para coletar informações do site
 def collect_info(driver):
     try:
-        # XPATH base para as linhas da tabela
+        
+        schedule_regular_collections(driver)
         base_xpath = '/html/body/div[1]/div[1]/div/main/div/div/div[3]/div/div[1]/div/div/div[1]/div/div/div[8]/div/div/div[3]/div/div/div[1]/div/div[2]/div/div[1]/div/div/div'
 
         # Encontrar as primeiras 3 linhas na tabela
