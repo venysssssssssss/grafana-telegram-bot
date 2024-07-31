@@ -60,7 +60,7 @@ def main():
         '//*[@id="reactRoot"]/div[1]/div/div[3]/div[3]/div/div/div[1]/div[1]/button'
     )
 
-    send_informational_message(metrics, tme_xpath, tef_xpath, backlog_xpath)
+    #send_informational_message(metrics, tme_xpath, tef_xpath, backlog_xpath)
 
     monitor_falhas(browser_manager.driver)
     browser_manager.driver.quit()
