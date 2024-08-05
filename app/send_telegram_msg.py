@@ -28,11 +28,19 @@ def send_telegram_message(message):
 
 def send_informational_message(driver, tme_xpath, tef_xpath, backlog_xpath):
     try:
-        data_processor = DataProcessor(
-            os.path.join(download_path, 'relatorio.csv')
-        )
+        data_processor = DataProcessor(os.path.join(download_path, 'relatorio.csv'))
         metrics = data_processor.analyze_data()
-        print('Returned metrics:', metrics)  # Supondo que o objeto driver contém o dicionário de métricas
+        print(metrics)
+        
+        if metrics == 'no_data':
+            message = (
+                f'🤖 *Automação PAP - MVP1*\n{datetime.date.today().strftime("%d/%m/%Y")}\n\n'
+                'Robô Ocioso (Sem Dados)'
+            )
+            send_telegram_message(message)
+            logging.info("Mensagem de ociosidade enviada com sucesso!")
+            return
+
         count_success = metrics.get('count_success', 0)
         count_business_error = metrics.get('count_business_error', 0)
         count_system_failure = metrics.get('count_system_failure', 0)

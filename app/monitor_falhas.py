@@ -49,7 +49,7 @@ def monitor_falhas(driver, tme_xpath, tef_xpath, backlog_xpath):
     while True:
         falha_detectada = collect_info(driver)
         if falha_detectada:
-            send_telegram_message('Falha de sistema\n\nℹ️ Informação: falha ao importar pedidos')
+            send_telegram_message('⚠️ MVP1 - Falha de sistema\n\nℹ️ Informação: falha ao importar pedidos')
             while falha_detectada:
                 time.sleep(60)
                 falha_detectada = collect_info(driver)
