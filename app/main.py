@@ -70,7 +70,6 @@ def main():
         logger.info("Monitoramento de falhas iniciado")
 
     finally:
-        browser_manager.quit_browser()
         logger.info("Finalizando o script principal")
 
 if __name__ == '__main__':

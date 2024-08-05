@@ -3,7 +3,6 @@ import logging
 from threading import Thread
 import schedule
 from schedule_regular import schedule_regular_collections
-from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.by import By
 from send_telegram_msg import send_telegram_message
@@ -19,16 +18,21 @@ def collect_info(driver):
         total_rows = len(rows)
         logger.info(f'Total de linhas processadas: {total_rows}')
 
-        falha_detectada = False
-        for row in range(1, min(4, total_rows + 1)):
+        falha_count = 0
+        for row in range(1, total_rows + 1):
             item_xpath = f'{base_xpath}[{row}]/div[3]'
             status_xpath = f'{base_xpath}[{row}]/div[7]'
             item = driver.find_element(By.XPATH, item_xpath).text
             status = driver.find_element(By.XPATH, status_xpath).text
             if item == 'ValidarVendasLiberadas' and status == 'Falha de sistema':
-                falha_detectada = True
+                falha_count += 1
             logger.info(f'Item: {item} - Status: {status}')
-        return falha_detectada
+
+            # Se já tivermos 3 falhas, podemos parar de verificar
+            if falha_count >= 3:
+                return True
+
+        return False
     except WebDriverException as e:
         logger.error(f'Erro ao coletar informações: {e}')
         return False
