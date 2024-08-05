@@ -50,12 +50,13 @@ def monitor_falhas(driver, tme_xpath, tef_xpath, backlog_xpath):
     logger.info("Thread de agendamento iniciada")
 
     # Loop de monitoramento de falhas
+    falha_reportada = False
     while True:
         falha_detectada = collect_info(driver)
-        if falha_detectada:
-            send_telegram_message('⚠️ MVP1 - Falha de sistema\n\nℹ️ Informação: falha ao importar pedidos')
-            while falha_detectada:
-                time.sleep(60)
-                falha_detectada = collect_info(driver)
-            send_telegram_message('✅ Robô retomado para produção - MVP1 ✅\n\n⏰ Status: operando normalmente')
+        if falha_detectada and not falha_reportada:
+            send_telegram_message('🤖 *MVP1 - Falha de sistema* ❌\n\nℹ️ *Informação*: falha ao importar pedidos')
+            falha_reportada = True
+        elif not falha_detectada and falha_reportada:
+            send_telegram_message('🤖 *MVP1 - Em produção* ✅\n\n⏰ *Status*: operando normalmente')
+            falha_reportada = False
         time.sleep(60)
