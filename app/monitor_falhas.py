@@ -18,21 +18,25 @@ def collect_info(driver):
         total_rows = len(rows)
         logger.info(f'Total de linhas processadas: {total_rows}')
 
-        falha_count = 0
-        for row in range(1, total_rows + 1):
+        falha_detectada = False
+        consecutive_failures = 0  # Counter for consecutive failures
+
+        for row in range(1, min(4, total_rows + 1)):
             item_xpath = f'{base_xpath}[{row}]/div[3]'
             status_xpath = f'{base_xpath}[{row}]/div[7]'
             item = driver.find_element(By.XPATH, item_xpath).text
             status = driver.find_element(By.XPATH, status_xpath).text
             if item == 'ValidarVendasLiberadas' and status == 'Falha de sistema':
-                falha_count += 1
+                consecutive_failures += 1
+                if consecutive_failures >= 3:
+                    falha_detectada = True
+                    continue
+            else:
+                consecutive_failures = 0
+
             logger.info(f'Item: {item} - Status: {status}')
 
-            # Se já tivermos 3 falhas, podemos parar de verificar
-            if falha_count >= 3:
-                return True
-
-        return False
+        return falha_detectada
     except WebDriverException as e:
         logger.error(f'Erro ao coletar informações: {e}')
         return False
@@ -50,13 +54,12 @@ def monitor_falhas(driver, tme_xpath, tef_xpath, backlog_xpath):
     logger.info("Thread de agendamento iniciada")
 
     # Loop de monitoramento de falhas
-    falha_reportada = False
     while True:
         falha_detectada = collect_info(driver)
-        if falha_detectada and not falha_reportada:
+        if falha_detectada:
             send_telegram_message('🤖 *MVP1 - Falha de sistema* ❌\n\nℹ️ *Informação*: falha ao importar pedidos')
-            falha_reportada = True
-        elif not falha_detectada and falha_reportada:
+            while falha_detectada:
+                time.sleep(60)
+                collect_info(driver)
             send_telegram_message('🤖 *MVP1 - Em produção* ✅\n\n⏰ *Status*: operando normalmente')
-            falha_reportada = False
         time.sleep(60)
