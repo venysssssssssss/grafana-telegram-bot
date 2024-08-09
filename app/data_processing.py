@@ -1,5 +1,6 @@
 import duckdb
 import pandas as pd
+import time
 
 class DataProcessor:
     def __init__(self, file_path):
@@ -8,8 +9,6 @@ class DataProcessor:
     def analyze_data(self):
         df = pd.read_csv(self.file_path, sep=',', skiprows=1)
         print(df)
-        if df.empty:
-            return 'no_data'
 
         if 'Status' not in df.columns:
             df.columns = df.columns.str.strip()  # Remove any leading/trailing whitespace
@@ -28,6 +27,10 @@ class DataProcessor:
         count_success = con.execute("SELECT COUNT(*) FROM data WHERE Status = 'Concluído com sucesso'").fetchone()[0]
         count_business_error = con.execute("SELECT COUNT(*) FROM data WHERE Status = 'Erro de negócio'").fetchone()[0]
         count_system_failure = con.execute("SELECT COUNT(*) FROM data WHERE Status = 'Falha de sistema'").fetchone()[0]
+        print(f'total_rows: {total_rows}')
+        print(f'count_success: {count_success}')
+        print(f'count_business_error: {count_business_error}')
+        print(f'count_system_failure: {count_system_failure}')
 
         return {
             'total_rows': total_rows,
