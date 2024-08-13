@@ -20,7 +20,7 @@ def schedule_for_day(day, times, func, *args):
 def schedule_regular_collections(driver, tme_xpath, tef_xpath, backlog_xpath, actions, browser_manager):
     schedule_dict = {
         'monday': ['08:05', '12:05', '16:05', '20:05'],
-        'tuesday': ['08:05', '12:05','15:14', '16:05', '20:05'],
+        'tuesday': ['08:05', '12:05','15:30', '16:05', '20:05'],
         'wednesday': ['08:05', '10:45', '13:01', '14:54', '16:05', '20:05'],
         'thursday': ['08:05', '12:05', '16:05', '20:05', '14:30', '15:30'],
         'friday': ['08:05', '12:05', '16:05', '20:05'],
