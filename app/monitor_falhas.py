@@ -46,9 +46,9 @@ def run_scheduled_jobs():
         schedule.run_pending()
         time.sleep(1)
 
-def monitor_falhas(driver, tme_xpath, tef_xpath, backlog_xpath):
+def monitor_falhas(driver, tme_xpath, tef_xpath, backlog_xpath, actions, browser_manager):
     logger.info("Iniciando monitoramento de falhas")
-    schedule_regular_collections(driver, tme_xpath, tef_xpath, backlog_xpath)
+    schedule_regular_collections(driver, tme_xpath, tef_xpath, backlog_xpath, actions, browser_manager)
     scheduler_thread = Thread(target=run_scheduled_jobs)
     scheduler_thread.start()
     logger.info("Thread de agendamento iniciada")
@@ -63,3 +63,4 @@ def monitor_falhas(driver, tme_xpath, tef_xpath, backlog_xpath):
                 collect_info(driver)
             send_telegram_message('🤖 *MVP1 - Em produção* ✅\n\n⏰ *Status*: operando normalmente')
         time.sleep(60)
+

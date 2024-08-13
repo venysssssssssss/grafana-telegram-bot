@@ -12,7 +12,7 @@ download_path = browser_manager.clean_download_directory('data')
 
 def send_telegram_message(message, max_retries=3):
     telegram_token = os.getenv('TELEGRAM_TOKEN', '7226155746:AAEBPeOtzJrD_KQyeZinNBjh5HMmvHTBZLs')
-    chat_id = os.getenv('TELEGRAM_CHAT_ID', '-1002165188451')
+    chat_id = os.getenv('TELEGRAM_CHAT_ID', '-4239263411')
     url = f'https://api.telegram.org/bot{telegram_token}/sendMessage'
     payload = {'chat_id': chat_id, 'text': message, 'parse_mode': 'Markdown'}
 
@@ -30,7 +30,7 @@ def send_telegram_message(message, max_retries=3):
         logging.info(f"Tentativa {attempt} de {max_retries} falhou, tentando novamente...")
     logging.error("Falha ao enviar a mensagem após várias tentativas.")
 
-def send_informational_message(driver, tme_xpath, tef_xpath, backlog_xpath):
+def send_informational_message(driver, tme_xpath, tef_xpath, backlog_xpath, relatorio_path):
     try:
         data_processor = DataProcessor(os.path.join(download_path, 'relatorio.csv'))
         metrics = data_processor.analyze_data()
