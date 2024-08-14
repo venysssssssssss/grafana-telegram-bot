@@ -12,7 +12,7 @@ download_path = browser_manager.clean_download_directory('data')
 
 def send_telegram_message(message, max_retries=3):
     telegram_token = os.getenv('TELEGRAM_TOKEN', '7226155746:AAEBPeOtzJrD_KQyeZinNBjh5HMmvHTBZLs')
-    chat_id = os.getenv('TELEGRAM_CHAT_ID', '-4239263411')
+    chat_id = os.getenv('TELEGRAM_CHAT_ID', '-1002165188451')
     url = f'https://api.telegram.org/bot{telegram_token}/sendMessage'
     payload = {'chat_id': chat_id, 'text': message, 'parse_mode': 'Markdown'}
 
@@ -20,7 +20,7 @@ def send_telegram_message(message, max_retries=3):
         try:
             response = requests.post(url, data=payload)
             response.raise_for_status()
-            logging.info("Response acessado com sucesso!")
+            logging.info("Responde acessado com sucesso!")
             return
         except requests.HTTPError as e:
             logging.error(f"HTTP error occurred: {e.response.status_code} - {e.response.text}")
