@@ -45,11 +45,8 @@ def main():
         browser_manager.scroll_to_table()
         logger.info("Scroll até a tabela concluído")
 
-        #relatorio_path = execute_download_actions(actions, browser_manager, download_path)
+        relatorio_path = execute_download_actions(actions, browser_manager, download_path)
 
-        data_processor = DataProcessor(os.path.join(download_path, 'relatorio.csv'))
-        metrics = data_processor.analyze_data()
-        print(metrics)
         
         #send_informational_message(browser_manager.driver, tme_xpath, tef_xpath, backlog_xpath, relatorio_path)
 

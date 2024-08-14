@@ -10,13 +10,13 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 browser_manager = BrowserManager('data')
 download_path = browser_manager.clean_download_directory('data')
 
-def send_telegram_message(message, max_retries=3):
+def send_telegram_message(message, max_retries=1):
     telegram_token = os.getenv('TELEGRAM_TOKEN', '7226155746:AAEBPeOtzJrD_KQyeZinNBjh5HMmvHTBZLs')
-    chat_id = os.getenv('TELEGRAM_CHAT_ID', '-4239263411')
+    chat_id = os.getenv('TELEGRAM_CHAT_ID', '-1002165188451')
     url = f'https://api.telegram.org/bot{telegram_token}/sendMessage'
     payload = {'chat_id': chat_id, 'text': message, 'parse_mode': 'Markdown'}
 
-    for attempt in range(1, max_retries + 1):
+    for attempt in range(1, max_retries):
         try:
             response = requests.post(url, data=payload)
             response.raise_for_status()
