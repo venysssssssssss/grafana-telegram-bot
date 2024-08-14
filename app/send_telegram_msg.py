@@ -10,23 +10,25 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 browser_manager = BrowserManager('data')
 download_path = browser_manager.clean_download_directory('data')
 
-def send_telegram_message(message):
+def send_telegram_message(message, max_retries=3):
     telegram_token = os.getenv('TELEGRAM_TOKEN', '7226155746:AAEBPeOtzJrD_KQyeZinNBjh5HMmvHTBZLs')
-    chat_id = os.getenv('TELEGRAM_CHAT_ID', '-1002165188451')
+    chat_id = os.getenv('TELEGRAM_CHAT_ID', '-4239263411')
     url = f'https://api.telegram.org/bot{telegram_token}/sendMessage'
     payload = {'chat_id': chat_id, 'text': message, 'parse_mode': 'Markdown'}
 
-    try:
-        response = requests.post(url, data=payload)
-        response.raise_for_status()
-        logging.info("Mensagem enviada com sucesso!")
-    except requests.HTTPError as e:
-        logging.error(f"HTTP error occurred: {e.response.status_code} - {e.response.text}")
-        traceback.print_exc()
-    except requests.RequestException as e:
-        logging.exception("Erro ao enviar mensagem: %s", e)
-    except Exception as e:
-        logging.exception("Erro inesperado: %s", e)
+    for attempt in range(1, max_retries):
+        try:
+            response = requests.post(url, data=payload)
+            response.raise_for_status()
+            logging.info("Response acessado com sucesso!")
+            return
+        except requests.HTTPError as e:
+            logging.error(f"HTTP error occurred: {e.response.status_code} - {e.response.text}")
+            traceback.print_exc()
+        except requests.RequestException as e:
+            logging.exception("Erro ao enviar mensagem: %s", e)
+        logging.info(f"Tentativa {attempt} de {max_retries} falhou, tentando novamente...")
+    logging.error("Falha ao enviar a mensagem após várias tentativas.")
 
 def send_informational_message(driver, tme_xpath, tef_xpath, backlog_xpath, relatorio_path):
     try:

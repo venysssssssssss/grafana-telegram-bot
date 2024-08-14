@@ -21,13 +21,13 @@ def schedule_regular_collections(driver, tme_xpath, tef_xpath, backlog_xpath, ac
     schedule_dict = {
         'monday': ['08:05', '12:05', '16:05', '20:05'],
         'tuesday': ['08:05', '12:05', '16:05', '20:05'],
-        'wednesday': ['08:05', '10:45', '13:01', '14:54', '16:05', '20:05'],
+        'wednesday': ['08:05', '10:45', '19:55', '14:54', '16:21', '20:05'],
         'thursday': ['08:05', '12:05', '16:05', '20:05', '14:30', '15:30'],
         'friday': ['08:05', '12:05', '16:05', '20:05'],
         'saturday': ['09:05', '12:05', '15:55'],
     }
+
     for day, times in schedule_dict.items():
-        for time in times:
-            logger.info(f"Agendando tarefa para {day} às {time}")
-            schedule.every().day.at(time).do(download_and_send_message, actions, browser_manager, tme_xpath, tef_xpath, backlog_xpath)
+        schedule_for_day(day, times, download_and_send_message, actions, browser_manager, tme_xpath, tef_xpath, backlog_xpath)
+
     logger.info("Tarefas de agendamento configuradas")
