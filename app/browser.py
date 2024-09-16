@@ -17,7 +17,7 @@ class BrowserManager:
 
     def start_browser(self, download_path):
         driver_path = os.path.join(
-            os.getcwd(), '/usr/local/bin/chromedriver'
+            os.getcwd(), '/chrome/chromedriver'
         )  # Corrigido caminho absoluto para o chromedriver
 
         service = Service(driver_path)
