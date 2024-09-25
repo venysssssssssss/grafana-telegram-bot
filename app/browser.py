@@ -6,7 +6,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
-
+from selenium.common.exceptions import NoSuchElementException  # Import necessário
 
 class BrowserManager:
     def __init__(self, download_directory):
@@ -22,7 +22,7 @@ class BrowserManager:
 
         service = Service(driver_path)
         options = webdriver.ChromeOptions()
-        options.add_argument('--headless')  # Adicionado modo headless
+        # options.add_argument('--headless')  # Comentado para desativar o modo headless
         options.add_argument(
             '--no-sandbox'
         )  # Adicionado para evitar problemas de sandbox
@@ -57,7 +57,7 @@ class BrowserManager:
                 action.move_by_offset(0, 42).perform()
                 time.sleep(0.1)
             action.release().perform()
-        except NoSuchElementException as e:   # type: ignore
+        except NoSuchElementException as e:
             print(f'Erro ao encontrar o scrollbar: {e}')
             last_height = self.driver.execute_script(
                 'return document.body.scrollHeight'
