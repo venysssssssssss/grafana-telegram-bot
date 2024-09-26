@@ -1,6 +1,8 @@
+import time
+
 import duckdb
 import pandas as pd
-import time
+
 
 class DataProcessor:
     def __init__(self, file_path):
@@ -11,9 +13,13 @@ class DataProcessor:
         print(df)
 
         if 'Status' not in df.columns:
-            df.columns = df.columns.str.strip()  # Remove any leading/trailing whitespace
+            df.columns = (
+                df.columns.str.strip()
+            )  # Remove any leading/trailing whitespace
             if 'Status' not in df.columns:
-                raise ValueError("The 'Status' column is not present in the CSV file.")
+                raise ValueError(
+                    "The 'Status' column is not present in the CSV file."
+                )
 
         df = df[df['P'] == 1]
         if df.empty:
@@ -24,9 +30,15 @@ class DataProcessor:
         con = duckdb.connect(database=':memory:')
         con.register('data', df)
         total_rows = con.execute('SELECT COUNT(*) FROM data').fetchone()[0]
-        count_success = con.execute("SELECT COUNT(*) FROM data WHERE Status = 'Concluído com sucesso'").fetchone()[0]
-        count_business_error = con.execute("SELECT COUNT(*) FROM data WHERE Status = 'Erro de negócio'").fetchone()[0]
-        count_system_failure = con.execute("SELECT COUNT(*) FROM data WHERE Status = 'Falha de sistema'").fetchone()[0]
+        count_success = con.execute(
+            "SELECT COUNT(*) FROM data WHERE Status = 'Concluído com sucesso'"
+        ).fetchone()[0]
+        count_business_error = con.execute(
+            "SELECT COUNT(*) FROM data WHERE Status = 'Erro de negócio'"
+        ).fetchone()[0]
+        count_system_failure = con.execute(
+            "SELECT COUNT(*) FROM data WHERE Status = 'Falha de sistema'"
+        ).fetchone()[0]
         print(f'total_rows: {total_rows}')
         print(f'count_success: {count_success}')
         print(f'count_business_error: {count_business_error}')
@@ -42,6 +54,9 @@ class DataProcessor:
 
     def apply_business_rules(self, df):
         for row in range(1, min(4, len(df))):
-            if df.iloc[row]['Item'] == 'ValidarVendasLiberadas' and df.iloc[row]['Status'] == 'Falha de sistema':
+            if (
+                df.iloc[row]['Item'] == 'ValidarVendasLiberadas'
+                and df.iloc[row]['Status'] == 'Falha de sistema'
+            ):
                 return True
         return False

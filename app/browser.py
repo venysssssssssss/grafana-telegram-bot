@@ -3,10 +3,12 @@ import shutil
 import time
 
 from selenium import webdriver
+from selenium.common.exceptions import \
+    NoSuchElementException  # Import necessário
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
-from selenium.common.exceptions import NoSuchElementException  # Import necessário
+
 
 class BrowserManager:
     def __init__(self, download_directory):
@@ -32,7 +34,7 @@ class BrowserManager:
         options.add_argument(
             '--disable-gpu'
         )  # Adicionado para evitar problemas com GPU
-        options.add_argument('--window-size=1366,768')  # Tamanho da janela
+        options.add_argument('--window-size=1366,1080')  # Tamanho da janela
 
         options.add_experimental_option(
             'prefs',
@@ -111,3 +113,7 @@ class BrowserManager:
             os.rename(latest_file, new_path)
         else:
             raise ValueError(f'Unexpected file type: {ext}')
+        
+    
+    def quit(self):
+        self.driver.quit()
