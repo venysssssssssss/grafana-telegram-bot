@@ -11,18 +11,15 @@ from send_telegram_msg import send_telegram_message
 def collect_info(driver, dashboard_name):
     try:
         base_xpath = '/html/body/div[1]/div[1]/div/main/div/div/div[3]/div/div[1]/div/div/div[1]/div/div/div[8]/div/div/div[3]/div/div/div[1]/div/div[2]/div/div[1]/div/div/div'
-        time.sleep(4)
+        time.sleep(3)
         rows = driver.find_elements(By.XPATH, f'{base_xpath}/div[3]')
         total_rows = len(rows)
-        logging.info(
-            f'{dashboard_name} - Total de linhas processadas: {total_rows}'
-        )
+        
 
         falha_detectada = False
         consecutive_failures = 0
 
         for row in range(1, min(4, total_rows + 1)):
-            logging.info(f'{dashboard_name} - Linhas: {total_rows}')
             item_xpath = f'{base_xpath}[{row}]/div[3]'
             status_xpath = f'{base_xpath}[{row}]/div[7]'
             item = driver.find_element(By.XPATH, item_xpath).text
@@ -37,7 +34,6 @@ def collect_info(driver, dashboard_name):
                     break
             else:
                 consecutive_failures = 0
-            logging.info(f'{dashboard_name} - Item: {item} - Status: {status}')
 
         return falha_detectada
     except WebDriverException as e:
@@ -77,4 +73,4 @@ def monitor_falhas(driver_mvp1, driver_mvp3):
 def run_scheduled_jobs():
     while True:
         schedule.run_pending()
-        time.sleep(1)
+        time.sleep(5)

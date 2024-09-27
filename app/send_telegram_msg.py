@@ -45,10 +45,11 @@ def send_informational_message(
     driver, tme_xpath, tef_xpath, backlog_xpath, relatorio_path, dashboard_name
 ):
     try:
-        data_processor = DataProcessor(
-            os.path.join(download_path, 'relatorio.csv')
-        )
+        # Usar o caminho correto passado como argumento (relatorio_path)
+        data_processor = DataProcessor(relatorio_path)
         metrics = data_processor.analyze_data()
+
+        dashboard_name_upper = dashboard_name.upper()
 
         if metrics == 'no_data':
             message = (
@@ -82,7 +83,7 @@ def send_informational_message(
             ) = percent_system_failure = 0
 
         message = (
-            f'🤖 *Automação PAP - {dashboard_name}*\n{datetime.date.today().strftime("%d/%m/%Y")}\n\n'
+            f'🤖 *Automação PAP - {dashboard_name_upper}*\n{datetime.date.today().strftime("%d/%m/%Y")}\n\n'
             f'*Status do robô*: Operando ✅\n\n'
             f'📓*Informacional até {datetime.datetime.now().strftime("%Hh%M")}*\n'
             f'🗂*Backlog*: {backlog_xpath}\n'

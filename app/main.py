@@ -8,16 +8,14 @@ from browser import BrowserManager
 from dashboard_xpaths import DASHBOARD_XPATHS
 from execute_download_actions import execute_download_actions
 from monitor_falhas import monitor_falhas
-from schedule_regular import schedule_regular_collections
 from selenium.common.exceptions import (NoSuchElementException,
                                         WebDriverException)
 from send_telegram_msg import send_informational_message
-from window_helper import switch_to_window  # Importar do novo arquivo
+from window_helper import switch_to_window
 
 # Configurar logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 logger = logging.getLogger()
-
 
 def collect_data_from_dashboard(
     driver,
@@ -44,9 +42,9 @@ def collect_data_from_dashboard(
         logger.info(f'Scroll até a tabela concluído para {dashboard_name}')
 
         if initial_run:
-            # Executar ações de download apenas na primeira vez
+            # Executar ações de download com o nome do dashboard
             relatorio_path = execute_download_actions(
-                actions, browser_manager, download_path
+                actions, browser_manager, download_path, dashboard_name
             )
             logger.info(
                 f'Relatório baixado para o {dashboard_name} no caminho: {relatorio_path}'
@@ -141,17 +139,27 @@ def process_dashboard(
             download_path,
             initial_run,
         )
+        
+        # Garantir que o caminho correto do relatório está sendo processado para cada dashboard
         if result:
-            # Enviar mensagem após o download
-            if result['relatorio_path']:
+            relatorio_path = result['relatorio_path']  # Certifique-se de que este caminho é específico para cada dashboard
+
+            # Enviar mensagem APENAS após garantir que o arquivo certo foi processado
+            if initial_run and relatorio_path:
                 send_informational_message(
                     driver,
                     result['tme'],
                     result['tef'],
                     result['backlog'],
-                    result['relatorio_path'],
+                    relatorio_path,  # Caminho correto para cada dashboard
                     dashboard_name,
                 )
+
+                # Excluir o arquivo após enviar a mensagem
+                logger.info(f'Removendo o arquivo {relatorio_path}')
+                os.remove(relatorio_path)
+                logger.info(f'Arquivo {relatorio_path} removido com sucesso.')
+
             return result
         else:
             logger.error(f'Falha ao coletar dados do {dashboard_name}')
@@ -159,92 +167,6 @@ def process_dashboard(
     except Exception as e:
         logger.error(f'Erro ao processar o dashboard {dashboard_name}: {e}')
         return None
-
-
-def alternar_monitoramento(
-    driver,
-    dashboards,
-    actions_mvp1,
-    actions_mvp3,
-    browser_manager,
-    download_path,
-):
-    monitoramento_intervalo = 60  # 1 minuto para monitoramento em cada guia
-
-    while True:
-        # Monitorar MVP1 por 1 minuto
-        logger.info('Alternando para o monitoramento de MVP1')
-        switch_to_window(driver, 0, 'MVP1')  # Alternar para a aba do MVP1
-        monitorar_por_tempo(
-            driver,
-            'mvp1',
-            dashboards['mvp1'],
-            actions_mvp1,
-            browser_manager,
-            download_path,
-            monitoramento_intervalo,
-        )
-
-        # Monitorar MVP3 por 1 minuto
-        logger.info('Alternando para o monitoramento de MVP3')
-        switch_to_window(driver, 1, 'MVP3')  # Alternar para a aba do MVP3
-        monitorar_por_tempo(
-            driver,
-            'mvp3',
-            dashboards['mvp3'],
-            actions_mvp3,
-            browser_manager,
-            download_path,
-            monitoramento_intervalo,
-        )
-
-
-def monitorar_por_tempo(
-    driver,
-    dashboard_name,
-    dashboard_url,
-    actions,
-    browser_manager,
-    download_path,
-    monitor_time,
-):
-    """
-    Monitora o dashboard por um tempo definido e verifica falhas.
-    """
-    start_time = time.time()  # Marcar o início do monitoramento
-
-    try:
-        while (
-            time.time() - start_time < monitor_time
-        ):  # Executa o monitoramento durante o tempo definido
-            result = process_dashboard(
-                driver,
-                dashboard_name,
-                dashboard_url,
-                actions,
-                browser_manager,
-                download_path,
-                initial_run=False,
-            )
-
-            if result:
-                # Executa o monitoramento de falhas
-                monitor_falhas(driver_mvp1=driver, driver_mvp3=driver)
-                logger.info(
-                    f'Monitoramento de falhas finalizado para {dashboard_name}'
-                )
-            else:
-                logger.error(
-                    f'Falha ao coletar dados para {dashboard_name} durante o monitoramento'
-                )
-
-            # Aguarde um intervalo pequeno antes de verificar novamente
-            time.sleep(
-                5
-            )  # Pequeno intervalo entre verificações para não sobrecarregar o monitoramento
-
-    except Exception as e:
-        logger.error(f'Erro ao monitorar o {dashboard_name}: {e}')
 
 
 def main():
@@ -262,6 +184,7 @@ def main():
     try:
         # Processar MVP1
         actions_mvp1 = ActionManager(driver)
+        logger.info('Processando MVP1...')
         kpis_mvp1 = process_dashboard(
             driver,
             'mvp1',
@@ -272,12 +195,14 @@ def main():
             initial_run=True,
         )
 
-        # Abrir uma nova aba para MVP3 na mesma sessão do navegador
+        # Após concluir MVP1, vá para MVP3
+        logger.info('Abrindo nova aba para MVP3...')
         driver.execute_script("window.open('');")
         switch_to_window(driver, 1, 'MVP3')  # Alternar para a aba do MVP3
 
         # Processar MVP3
         actions_mvp3 = ActionManager(driver)
+        logger.info('Processando MVP3...')
         kpis_mvp3 = process_dashboard(
             driver,
             'mvp3',
@@ -288,36 +213,11 @@ def main():
             initial_run=True,
         )
 
-        # Iniciar o monitoramento alternado
-        logger.info(
-            'Iniciando monitoramento alternado de falhas para MVP1 e MVP3'
-        )
-        schedule_regular_collections(
-            driver,  # O driver principal, compartilhado entre os dashboards
-            actions_mvp1,  # Ações específicas do MVP1
-            actions_mvp3,  # Ações específicas do MVP3
-            browser_manager,  # Gerenciador do navegador compartilhado
-            kpis_mvp1,  # KPIs do MVP1
-            kpis_mvp3,  # KPIs do MVP3
-        )
-
-        alternar_monitoramento(
-            driver,
-            dashboards,
-            actions_mvp1,
-            actions_mvp3,
-            browser_manager,
-            download_path,
-        )
-
     except Exception as e:
         logger.error(f'Erro durante o processo principal: {e}')
     finally:
         driver.quit()
-        logger.info(
-            'Todas as páginas foram acessadas e o navegador foi fechado.'
-        )
-
+        logger.info('Todas as páginas foram acessadas e o navegador foi fechado.')
 
 if __name__ == '__main__':
     main()

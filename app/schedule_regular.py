@@ -11,16 +11,6 @@ from browser import BrowserManager  # Importação para reinicializar o navegado
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 logger = logging.getLogger()
 
-def restart_browser(browser_manager):
-    try:
-        browser_manager.quit()
-    except Exception as e:
-        logger.error(f"Erro ao tentar encerrar o navegador: {e}")
-    finally:
-        # Crie uma nova instância do WebDriver
-        browser_manager = BrowserManager('data')
-        return browser_manager
-
 
 def download_and_send_message_for_dashboard(
     dashboard_name, driver, actions, browser_manager, kpi_data, download_path
@@ -28,6 +18,7 @@ def download_and_send_message_for_dashboard(
     try:
         # Realiza o scroll e o download dos dados para o dashboard específico
         logger.info(f'Iniciando processo de download para {dashboard_name}')
+        time.sleep(1)
         relatorio_path = execute_download_actions(
             actions, browser_manager, download_path
         )
@@ -81,7 +72,6 @@ def download_and_send_message_for_both_dashboards(
 
     except WebDriverException as e:
         logger.error(f"Erro no WebDriver ao tentar acessar MVP: {e}") # type: ignore
-        browser_manager = restart_browser(browser_manager)  # Reiniciar o navegador em caso de erro
 
 def schedule_for_day(day, times, func, *args):
     for time in times:
@@ -99,7 +89,7 @@ def schedule_regular_collections(
         'tuesday': ['08:05', '12:05', '16:05', '20:05'],
         'wednesday': ['08:05', '12:05', '16:05', '20:05'],
         'thursday': ['08:05', '18:19', '16:05', '20:05'],
-        'friday': ['08:05', '12:05', '16:05', '20:05'],
+        'friday': ['08:05', '13:17', '16:05', '20:05'],
         'saturday': ['09:05', '12:05', '15:55'],
     }
 
