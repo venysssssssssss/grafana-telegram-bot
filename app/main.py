@@ -1,7 +1,7 @@
 import logging
 import os
 import time
-
+import schedule
 from action_manager import ActionManager
 from authentication import Authenticator
 from browser import BrowserManager
@@ -12,6 +12,7 @@ from selenium.common.exceptions import (NoSuchElementException,
                                         WebDriverException)
 from send_telegram_msg import send_informational_message
 from window_helper import switch_to_window
+from schedule_regular import schedule_regular_collections  # Importar o agendamento
 
 # Configurar logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
@@ -139,7 +140,7 @@ def process_dashboard(
             download_path,
             initial_run,
         )
-        
+
         # Garantir que o caminho correto do relatório está sendo processado para cada dashboard
         if result:
             relatorio_path = result['relatorio_path']  # Certifique-se de que este caminho é específico para cada dashboard
@@ -181,10 +182,14 @@ def main():
     driver = browser_manager.driver
     download_path = browser_manager.clean_download_directory('data')
 
+    # Configurar o gerenciador de ações para MVP1 e MVP3
+    actions_mvp1 = ActionManager(driver)
+    actions_mvp3 = ActionManager(driver)
+
     try:
-        # Processar MVP1
-        actions_mvp1 = ActionManager(driver)
-        logger.info('Processando MVP1...')
+        logger.info('Iniciando o agendamento das tarefas...')
+
+        # Coletar KPIs iniciais (se necessário)
         kpis_mvp1 = process_dashboard(
             driver,
             'mvp1',
@@ -195,14 +200,6 @@ def main():
             initial_run=True,
         )
 
-        # Após concluir MVP1, vá para MVP3
-        logger.info('Abrindo nova aba para MVP3...')
-        driver.execute_script("window.open('');")
-        switch_to_window(driver, 1, 'MVP3')  # Alternar para a aba do MVP3
-
-        # Processar MVP3
-        actions_mvp3 = ActionManager(driver)
-        logger.info('Processando MVP3...')
         kpis_mvp3 = process_dashboard(
             driver,
             'mvp3',
@@ -213,11 +210,22 @@ def main():
             initial_run=True,
         )
 
+        # Configurar o agendamento regular das tarefas
+        schedule_regular_collections(
+            driver, actions_mvp1, actions_mvp3, browser_manager, kpis_mvp1, kpis_mvp3
+        )
+
+        # Loop para manter o agendamento rodando
+        while True:
+            schedule.run_pending()
+            time.sleep(1)
+
     except Exception as e:
         logger.error(f'Erro durante o processo principal: {e}')
     finally:
         driver.quit()
         logger.info('Todas as páginas foram acessadas e o navegador foi fechado.')
+
 
 if __name__ == '__main__':
     main()

@@ -1,16 +1,20 @@
 import os
 import time
 from venv import logger
+
+from action_manager import ActionManager
+from browser import BrowserManager
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
-from action_manager import ActionManager
-from browser import BrowserManager
 
 browser_manager = BrowserManager('data')
 actions = ActionManager(browser_manager.driver)
 
-def execute_download_actions(actions, browser_manager, download_path, dashboard_name):
+
+def execute_download_actions(
+    actions, browser_manager, download_path, dashboard_name
+):
     """
     Executa uma sequência de ações para mover e interagir com elementos da página,
     realizar o download de um arquivo e renomeá-lo, e finaliza com o fechamento de um elemento.
@@ -54,17 +58,25 @@ def execute_download_actions(actions, browser_manager, download_path, dashboard_
     # Aguardar o download ser concluído
     file_path = wait_for_file_completion(download_path)
     if not file_path:
-        logger.error("Nenhum arquivo foi baixado ou tipo de arquivo inesperado.")
-        raise FileNotFoundError("Nenhum arquivo válido foi baixado.")
-    
+        logger.error(
+            'Nenhum arquivo foi baixado ou tipo de arquivo inesperado.'
+        )
+        raise FileNotFoundError('Nenhum arquivo válido foi baixado.')
+
     # Renomear o arquivo com o nome do dashboard
     relatorio_filename = f'relatorio_{dashboard_name}.csv'
-    relatorio_path = rename_latest_file(download_path, file_path, relatorio_filename)
-    logger.info(f'Download concluído e arquivo renomeado para {relatorio_path}')
+    relatorio_path = rename_latest_file(
+        download_path, file_path, relatorio_filename
+    )
+    logger.info(
+        f'Download concluído e arquivo renomeado para {relatorio_path}'
+    )
 
     # Fechar o elemento após o download
-    click_once('//*[@id="reactRoot"]/div[1]/div/div[3]/div[3]/div/div/div[1]/div[1]/button')
-    time.sleep(0.5)  
+    click_once(
+        '//*[@id="reactRoot"]/div[1]/div/div[3]/div[3]/div/div/div[1]/div[1]/button'
+    )
+    time.sleep(0.5)
     return relatorio_path
 
 
@@ -77,7 +89,9 @@ def wait_for_file_completion(download_path, timeout=30):
     while time.time() - start_time < timeout:
         files = os.listdir(download_path)
         for file_name in files:
-            if not file_name.startswith('.') and file_name.endswith(('.csv', '.xlsx')):  # Adicione os formatos esperados
+            if not file_name.startswith('.') and file_name.endswith(
+                ('.csv', '.xlsx')
+            ):  # Adicione os formatos esperados
                 return os.path.join(download_path, file_name)
         time.sleep(1)  # Espera um pouco antes de verificar novamente
     return None
@@ -92,5 +106,5 @@ def rename_latest_file(download_path, old_file_path, new_file_name):
         os.rename(old_file_path, new_file_path)
         return new_file_path
     except OSError as e:
-        logger.error(f"Erro ao renomear o arquivo: {e}")
+        logger.error(f'Erro ao renomear o arquivo: {e}')
         raise

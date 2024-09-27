@@ -14,7 +14,6 @@ def collect_info(driver, dashboard_name):
         time.sleep(3)
         rows = driver.find_elements(By.XPATH, f'{base_xpath}/div[3]')
         total_rows = len(rows)
-        
 
         falha_detectada = False
         consecutive_failures = 0

@@ -113,7 +113,6 @@ class BrowserManager:
             os.rename(latest_file, new_path)
         else:
             raise ValueError(f'Unexpected file type: {ext}')
-        
-    
+
     def quit(self):
         self.driver.quit()

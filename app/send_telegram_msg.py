@@ -54,11 +54,13 @@ def send_informational_message(
 
         # Definir o link correto com base no dashboard
         if dashboard_name == 'mvp1':
-            link_detalhes = "https://e-bots.co/grafana/goto/2BJnrGrSR?orgId=1"
+            link_detalhes = 'https://e-bots.co/grafana/goto/2BJnrGrSR?orgId=1'
         elif dashboard_name == 'mvp3':
-            link_detalhes = "https://e-bots.co/grafana/goto/aUehNBRNR?orgId=1"
+            link_detalhes = 'https://e-bots.co/grafana/goto/aUehNBRNR?orgId=1'
         else:
-            link_detalhes = "https://e-bots.co/grafana"  # Link genérico de fallback
+            link_detalhes = (
+                'https://e-bots.co/grafana'  # Link genérico de fallback
+            )
 
         if metrics == 'no_data':
             message = (
@@ -105,7 +107,9 @@ def send_informational_message(
             f'🔰 Informacional desenv. - Projetos Tahto Aut/IA 🔰'
         )
         send_telegram_message(message)
-        logging.info(f'Mensagem processada e enviada para {dashboard_name_upper}!')
+        logging.info(
+            f'Mensagem processada e enviada para {dashboard_name_upper}!'
+        )
     except KeyError as e:
         logging.exception('Chave ausente nos dados: %s', e)
     except Exception as e:
@@ -113,4 +117,3 @@ def send_informational_message(
             f'Erro inesperado ao enviar mensagem informativa para {dashboard_name_upper}: %s',
             e,
         )
-
