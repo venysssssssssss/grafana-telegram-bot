@@ -49,16 +49,25 @@ def send_informational_message(
         data_processor = DataProcessor(relatorio_path)
         metrics = data_processor.analyze_data()
 
+        # Garantir que dashboard_name esteja em maiúsculas
         dashboard_name_upper = dashboard_name.upper()
+
+        # Definir o link correto com base no dashboard
+        if dashboard_name == 'mvp1':
+            link_detalhes = "https://e-bots.co/grafana/goto/2BJnrGrSR?orgId=1"
+        elif dashboard_name == 'mvp3':
+            link_detalhes = "https://e-bots.co/grafana/goto/aUehNBRNR?orgId=1"
+        else:
+            link_detalhes = "https://e-bots.co/grafana"  # Link genérico de fallback
 
         if metrics == 'no_data':
             message = (
-                f'🤖 *Automação PAP - {dashboard_name}*\n{datetime.date.today().strftime("%d/%m/%Y")}\n\n'
+                f'🤖 *Automação PAP - {dashboard_name_upper}*\n{datetime.date.today().strftime("%d/%m/%Y")}\n\n'
                 'Robô Ocioso (Sem Dados)'
             )
             send_telegram_message(message)
             logging.info(
-                f'Mensagem de ociosidade enviada para {dashboard_name}!'
+                f'Mensagem de ociosidade enviada para {dashboard_name_upper}!'
             )
             return
 
@@ -92,15 +101,16 @@ def send_informational_message(
             f'❌*Falha de sistema:* {count_system_failure} ({percent_system_failure:.2f}%)\n\n'
             f'⏱*Tempo médio de execução:* {tme_xpath}\n'
             f'⏱*Tempo de fila:* {tef_xpath}\n\n'
-            f'🌐*Link para mais detalhes*: https://e-bots.co/grafana/goto/2BJnrGrSR?orgId=1\n\n'
+            f'🌐*Link para mais detalhes*: {link_detalhes}\n\n'
             f'🔰 Informacional desenv. - Projetos Tahto Aut/IA 🔰'
         )
         send_telegram_message(message)
-        logging.info(f'Mensagem processada e enviada para {dashboard_name}!')
+        logging.info(f'Mensagem processada e enviada para {dashboard_name_upper}!')
     except KeyError as e:
         logging.exception('Chave ausente nos dados: %s', e)
     except Exception as e:
         logging.exception(
-            f'Erro inesperado ao enviar mensagem informativa para {dashboard_name}: %s',
+            f'Erro inesperado ao enviar mensagem informativa para {dashboard_name_upper}: %s',
             e,
         )
+
