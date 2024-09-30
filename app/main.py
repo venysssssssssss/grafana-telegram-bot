@@ -1,22 +1,26 @@
 import logging
 import os
 import time
+from threading import Thread
+
 import schedule
 from action_manager import ActionManager
 from authentication import Authenticator
 from browser import BrowserManager
 from dashboard_xpaths import DASHBOARD_XPATHS
 from execute_download_actions import execute_download_actions
-from monitor_falhas import monitor_falhas
+from monitor_falhas import (iniciar_monitoramento, monitor_falhas,
+                            pausar_monitoramento)
+from schedule_regular import \
+    schedule_regular_collections  # Importar o agendamento
 from selenium.common.exceptions import (NoSuchElementException,
                                         WebDriverException)
 from send_telegram_msg import send_informational_message
-from window_helper import switch_to_window
-from schedule_regular import schedule_regular_collections  # Importar o agendamento
 
 # Configurar logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 logger = logging.getLogger()
+
 
 def collect_data_from_dashboard(
     driver,
@@ -143,7 +147,9 @@ def process_dashboard(
 
         # Garantir que o caminho correto do relatório está sendo processado para cada dashboard
         if result:
-            relatorio_path = result['relatorio_path']  # Certifique-se de que este caminho é específico para cada dashboard
+            relatorio_path = result[
+                'relatorio_path'
+            ]  # Certifique-se de que este caminho é específico para cada dashboard
 
             # Enviar mensagem APENAS após garantir que o arquivo certo foi processado
             if initial_run and relatorio_path:
@@ -179,19 +185,20 @@ def main():
 
     # Iniciar o navegador em uma única instância
     browser_manager = BrowserManager(os.path.join(os.getcwd(), 'data'))
-    driver = browser_manager.driver
+    driver_mvp1 = browser_manager.driver
+    driver_mvp3 = browser_manager.driver
     download_path = browser_manager.clean_download_directory('data')
 
     # Configurar o gerenciador de ações para MVP1 e MVP3
-    actions_mvp1 = ActionManager(driver)
-    actions_mvp3 = ActionManager(driver)
+    actions_mvp1 = ActionManager(driver_mvp1)
+    actions_mvp3 = ActionManager(driver_mvp3)
 
     try:
         logger.info('Iniciando o agendamento das tarefas...')
 
         # Coletar KPIs iniciais (se necessário)
         kpis_mvp1 = process_dashboard(
-            driver,
+            driver_mvp1,
             'mvp1',
             dashboards['mvp1'],
             actions_mvp1,
@@ -201,7 +208,7 @@ def main():
         )
 
         kpis_mvp3 = process_dashboard(
-            driver,
+            driver_mvp3,
             'mvp3',
             dashboards['mvp3'],
             actions_mvp3,
@@ -212,19 +219,39 @@ def main():
 
         # Configurar o agendamento regular das tarefas
         schedule_regular_collections(
-            driver, actions_mvp1, actions_mvp3, browser_manager, kpis_mvp1, kpis_mvp3
+            driver_mvp1,
+            actions_mvp1,
+            actions_mvp3,
+            browser_manager,
+            kpis_mvp1,
+            kpis_mvp3,
         )
 
-        # Loop para manter o agendamento rodando
+        # Iniciar monitoramento de falhas em uma thread separada
+        monitor_falhas_thread = Thread(
+            target=monitor_falhas,
+            args=(
+                driver_mvp1,
+                driver_mvp3,
+                dashboards['mvp1'],
+                dashboards['mvp3'],
+            ),
+        )
+        monitor_falhas_thread.start()
+        logger.info('Monitoramento de falhas iniciado em thread separada')
+
         while True:
             schedule.run_pending()
-            time.sleep(1)
+            time.sleep(5)
 
     except Exception as e:
         logger.error(f'Erro durante o processo principal: {e}')
     finally:
-        driver.quit()
-        logger.info('Todas as páginas foram acessadas e o navegador foi fechado.')
+        driver_mvp1.quit()
+        driver_mvp3.quit()
+        logger.info(
+            'Todas as páginas foram acessadas e os navegadores foram fechados.'
+        )
 
 
 if __name__ == '__main__':
