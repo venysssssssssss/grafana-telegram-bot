@@ -14,6 +14,7 @@ RUN apt-get update && apt-get install -y \
     libdbus-glib-1-2 \
     libgtk-3-0 \
     libasound2 \
+    gnupg2 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
