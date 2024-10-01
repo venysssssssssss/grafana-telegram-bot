@@ -24,18 +24,13 @@ class BrowserManager:
 
         service = Service(driver_path)
         options = webdriver.ChromeOptions()
-        options.add_argument('--headless')  # Comentado para desativar o modo headless
-        options.add_argument(
-            '--no-sandbox'
-        )  # Adicionado para evitar problemas de sandbox
-        options.add_argument(
-            '--disable-dev-shm-usage'
-        )  # Adicionado para evitar problemas de memória compartilhada
-        options.add_argument(
-            '--disable-gpu'
-        )  # Adicionado para evitar problemas com GPU
-        options.add_argument('--window-size=1366,1080')  # Tamanho da janela
-        options.add_argument("--remote-debugging-port=9222")
+        options.add_argument('--headless')
+        options.add_argument('--disable-dev-shm-usage')
+        options.add_argument('--no-sandbox')
+        options.add_argument('--window-size=1366x768')
+        options.add_argument('--disable-gpu')
+        options.add_argument('--remote-debugging-port=9222')
+        options.add_argument('--display=:99.0')  # Display virtual usando o Xvfb
 
         options.add_experimental_option(
             'prefs',

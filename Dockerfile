@@ -44,7 +44,7 @@ RUN pip install poetry \
 RUN apt-get install -y xvfb
 
 # Script de inicialização do Xvfb
-ENTRYPOINT Xvfb :99 -ac -screen 0 1280x1024x16 &> /dev/null &
+ENTRYPOINT ["/bin/bash", "-c", "Xvfb :99 -ac -screen 0 1280x1024x16 & poetry run python app/main.py"]
 
 # Comando para iniciar a aplicação
 CMD ["poetry", "run", "python", "app/main.py"]
