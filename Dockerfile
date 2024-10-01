@@ -1,34 +1,21 @@
+# Use a imagem base oficial do Python
 FROM python:3.12-slim
- 
-RUN apt-get update && apt-get install -y 
 
-# Adicione o repositório do Microsoft Edge
-RUN wget -q https://packages.microsoft.com/keys/microsoft.asc -O- | apt-key add - && \
-    add-apt-repository "deb [arch=amd64] https://packages.microsoft.com/repos/edge stable main"
-
-# Instale o Microsoft Edge
-RUN apt-get update && \
-    apt-get install -y microsoft-edge-stable
-
-# Baixe e instale o EdgeDriver
-RUN EDGE_VERSION=$(microsoft-edge --version | cut -d ' ' -f 3) && \
-    wget -O /tmp/edgedriver.zip https://msedgedriver.azureedge.net/${EDGE_VERSION}/edgedriver_linux64.zip && \
-    unzip /tmp/edgedriver.zip -d /tmp/ && \
-    mkdir -p /usr/local/share/webdriver && \
-    mv /tmp/msedgedriver /usr/local/share/webdriver/msedgedriver && \
-    rm /tmp/edgedriver.zip
-
-RUN pip install poetry
-
-
-COPY app /src
-
+# Defina o diretório de trabalho
 WORKDIR /app
 
-RUN poetry install --no-root
+# Copie o arquivo pyproject.toml e poetry.lock para o diretório de trabalho
+COPY pyproject.toml poetry.lock /app/
 
-COPY . .
+# Instale o Poetry
+RUN pip install poetry
 
-EXPOSE 8000
+# Instale as dependências da aplicação usando o Poetry
+RUN poetry config virtualenvs.create false \
+    && poetry install --no-dev --no-interaction --no-ansi
 
-CMD ["poetry", "run", "python", "main.py"]
+# Copie o restante da aplicação para o container
+COPY . /app
+
+# Comando para rodar a aplicação
+CMD ["poetry", "run", "python", "app/main.py"]

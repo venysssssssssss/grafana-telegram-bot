@@ -16,9 +16,9 @@ download_path = browser_manager.clean_download_directory('data')
 
 def send_telegram_message(message, max_retries=3):
     telegram_token = os.getenv(
-        'TELEGRAM_TOKEN', '7946551520:AAGJ0Xj2lQbjX48ysHmJ6oVejn9KdavyTvg'
+        'TELEGRAM_TOKEN', '7226155746:AAEBPeOtzJrD_KQyeZinNBjh5HMmvHTBZLs'
     )
-    chat_id = os.getenv('TELEGRAM_CHAT_ID', '2065343573')
+    chat_id = os.getenv('TELEGRAM_CHAT_ID', '-1002165188451')
     url = f'https://api.telegram.org/bot{telegram_token}/sendMessage'
     payload = {'chat_id': chat_id, 'text': message, 'parse_mode': 'Markdown'}
 
