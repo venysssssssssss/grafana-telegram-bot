@@ -4,9 +4,9 @@ FROM python:3.12-slim
 # Definir o diretório de trabalho dentro do contêiner
 WORKDIR /app
 
-# Instalar dependências necessárias para o Google Chrome e o ChromeDriver
-RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 648ACFD622F3D138 \
-    && apt-get update && apt-get install -y \
+# Instalar o GnuPG e dependências necessárias para o Google Chrome e o ChromeDriver
+RUN apt-get update --allow-releaseinfo-change && apt-get install -y \
+    gnupg2 \
     wget \
     curl \
     unzip \
@@ -18,6 +18,9 @@ RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 648ACFD622F3D138 \
     libdbus-glib-1-2 \
     libgtk-3-0 \
     libasound2
+
+# Adicionar a chave GPG manualmente
+RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 648ACFD622F3D138
 
 # Baixar e instalar o Google Chrome
 RUN wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
