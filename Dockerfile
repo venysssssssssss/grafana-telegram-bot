@@ -1,7 +1,7 @@
 # Base image
 FROM python:3.12-slim
 
-# Instalar dependências necessárias e o Chrome
+# Instalar dependências necessárias e o GnuPG para gerenciar chaves GPG
 RUN apt-get update && apt-get install -y \
     wget \
     curl \
@@ -14,24 +14,7 @@ RUN apt-get update && apt-get install -y \
     libdbus-glib-1-2 \
     libgtk-3-0 \
     libasound2 \
-    libxrandr2 \
-    libatk1.0-0 \
-    libatk-bridge2.0-0 \
-    libcups2 \
-    libxkbcommon0 \
-    libxcomposite1 \
-    libxdamage1 \
-    libxfixes3 \
-    libxrender1 \
-    libxext6 \
-    libxshmfence1 \
-    libxmu6 \
-    libxtst6 \
-    libx11-xcb-dev \
-    fonts-liberation \
-    libappindicator3-1 \
-    lsb-release \
-    ca-certificates \
+    gnupg2 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
