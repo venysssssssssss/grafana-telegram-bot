@@ -35,6 +35,7 @@ class BrowserManager:
             '--disable-gpu'
         )  # Adicionado para evitar problemas com GPU
         options.add_argument('--window-size=1366,1080')  # Tamanho da janela
+        options.add_argument("--remote-debugging-port=9222")
 
         options.add_experimental_option(
             'prefs',
