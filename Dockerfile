@@ -17,7 +17,9 @@ RUN apt-get update --allow-releaseinfo-change && apt-get install -y \
     libx11-xcb1 \
     libdbus-glib-1-2 \
     libgtk-3-0 \
-    libasound2
+    libasound2 \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Adicionar a chave GPG manualmente
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 648ACFD622F3D138
