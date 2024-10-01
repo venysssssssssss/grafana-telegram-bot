@@ -5,7 +5,7 @@ FROM python:3.12-slim
 WORKDIR /app
 
 # Instalar dependências necessárias para o Google Chrome e o ChromeDriver
-RUN apt-get update && apt-get install -y \
+RUN apt-get update --allow-releaseinfo-change --no-check-gpg && apt-get install -y \
     wget \
     curl \
     unzip \
