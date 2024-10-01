@@ -14,6 +14,16 @@ RUN apt-get update && apt-get install -y \
     libdbus-glib-1-2 \
     libgtk-3-0 \
     libasound2 \
+    libxcomposite1 \
+    libxcursor1 \
+    libxdamage1 \
+    libxtst6 \
+    libatk1.0-0 \
+    libatk-bridge2.0-0 \
+    libcups2 \
+    libxrandr2 \
+    libxss1 \
+    --no-install-recommends \
     gnupg2 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
@@ -32,6 +42,9 @@ RUN wget -O /tmp/chromedriver-linux64.zip https://storage.googleapis.com/chrome-
 
 # Definir permissões de execução para o Chrome e ChromeDriver
 RUN chmod +x /usr/bin/google-chrome /usr/local/bin/chromedriver
+
+# Definir variáveis de ambiente necessárias
+ENV DBUS_SESSION_BUS_ADDRESS=/dev/null
 
 # Copiar os arquivos do projeto para dentro do container
 WORKDIR /app
