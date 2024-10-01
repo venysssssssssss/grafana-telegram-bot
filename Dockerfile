@@ -1,12 +1,8 @@
-# Usar uma imagem base do Python
+# Base image
 FROM python:3.12-slim
 
-# Definir o diretório de trabalho dentro do contêiner
-WORKDIR /app
-
-# Instalar o GnuPG e dependências necessárias para o Google Chrome e o ChromeDriver
-RUN apt-get update --allow-releaseinfo-change && apt-get install -y \
-    gnupg2 \
+# Instalar dependências necessárias e o Chrome
+RUN apt-get update && apt-get install -y \
     wget \
     curl \
     unzip \
@@ -18,41 +14,49 @@ RUN apt-get update --allow-releaseinfo-change && apt-get install -y \
     libdbus-glib-1-2 \
     libgtk-3-0 \
     libasound2 \
+    libxrandr2 \
+    libatk1.0-0 \
+    libatk-bridge2.0-0 \
+    libcups2 \
+    libxkbcommon0 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxfixes3 \
+    libxrender1 \
+    libxext6 \
+    libxshmfence1 \
+    libxmu6 \
+    libxtst6 \
+    libx11-xcb-dev \
+    fonts-liberation \
+    libappindicator3-1 \
+    lsb-release \
+    ca-certificates \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# Adicionar a chave GPG manualmente
-RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 648ACFD622F3D138
+# Instalar o Google Chrome
+RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add - \
+    && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list' \
+    && apt-get update \
+    && apt-get install -y google-chrome-stable
 
-# Baixar e instalar o Google Chrome
-RUN wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
-    && dpkg -i google-chrome-stable_current_amd64.deb || true \
-    && apt-get -f install -y \
-    && rm google-chrome-stable_current_amd64.deb
+# Instalar o ChromeDriver
+RUN CHROME_VERSION=$(google-chrome --version | grep -oP '\d+\.\d+\.\d+') && \
+    wget -O /tmp/chromedriver.zip https://chromedriver.storage.googleapis.com/$CHROME_VERSION/chromedriver_linux64.zip && \
+    unzip /tmp/chromedriver.zip -d /usr/local/bin/ && \
+    rm /tmp/chromedriver.zip
 
-# Baixar e instalar o ChromeDriver
-RUN CHROME_DRIVER_VERSION=$(curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE) \
-    && wget -q "https://chromedriver.storage.googleapis.com/${CHROME_DRIVER_VERSION}/chromedriver_linux64.zip" \
-    && unzip chromedriver_linux64.zip -d /usr/local/bin/ \
-    && rm chromedriver_linux64.zip
-
-# Definir o ChromeDriver no PATH
+# Definir o chromedriver no PATH
 ENV PATH="/usr/local/bin/chromedriver:${PATH}"
 
-# Copiar arquivos de dependências para o contêiner
-COPY pyproject.toml poetry.lock ./
-
-# Instalar o Poetry
-RUN pip install poetry
-
-# Instalar as dependências do projeto
-RUN poetry install --no-root
-
-# Copiar o código da aplicação
+# Copiar os arquivos do projeto para dentro do container
+WORKDIR /app
 COPY . .
 
-# Configurar a variável de ambiente para o caminho do Google Chrome
-ENV PATH="/usr/bin/google-chrome:${PATH}"
+# Instalar Poetry e dependências
+RUN pip install poetry \
+    && poetry install --no-root
 
-# Comando para rodar a aplicação
+# Comando para iniciar a aplicação
 CMD ["poetry", "run", "python", "app/main.py"]
