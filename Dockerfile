@@ -14,16 +14,7 @@ RUN apt-get update && apt-get install -y \
     libdbus-glib-1-2 \
     libgtk-3-0 \
     libasound2 \
-    libxcomposite1 \
-    libxcursor1 \
-    libxdamage1 \
-    libxtst6 \
-    libatk1.0-0 \
-    libatk-bridge2.0-0 \
-    libcups2 \
-    libxrandr2 \
-    libxss1 \
-    --no-install-recommends \
+    libgbm1 \
     gnupg2 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
@@ -43,16 +34,17 @@ RUN wget -O /tmp/chromedriver-linux64.zip https://storage.googleapis.com/chrome-
 # Definir permissões de execução para o Chrome e ChromeDriver
 RUN chmod +x /usr/bin/google-chrome /usr/local/bin/chromedriver
 
-# Definir variáveis de ambiente necessárias
-ENV DBUS_SESSION_BUS_ADDRESS=/dev/null
-
-# Copiar os arquivos do projeto para dentro do container
+# Instalar Poetry e dependências
 WORKDIR /app
 COPY . .
-
-# Instalar Poetry e dependências
 RUN pip install poetry \
     && poetry install --no-root
+
+# Iniciar o Xvfb
+RUN apt-get install -y xvfb
+
+# Script de inicialização do Xvfb
+ENTRYPOINT Xvfb :99 -ac -screen 0 1280x1024x16 &> /dev/null &
 
 # Comando para iniciar a aplicação
 CMD ["poetry", "run", "python", "app/main.py"]
