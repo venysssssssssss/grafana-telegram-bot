@@ -1,7 +1,7 @@
 # Base image
 FROM python:3.12-slim
 
-# Instalar dependências necessárias e o GnuPG para gerenciar chaves GPG
+# Instalar dependências necessárias
 RUN apt-get update && apt-get install -y \
     wget \
     curl \
@@ -14,25 +14,25 @@ RUN apt-get update && apt-get install -y \
     libdbus-glib-1-2 \
     libgtk-3-0 \
     libasound2 \
-    gnupg2 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# Instalar o Google Chrome
-RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add - \
-    && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list' \
-    && apt-get update \
-    && apt-get install -y google-chrome-stable
+# Baixar e instalar o Google Chrome da URL fornecida
+RUN wget -O /tmp/chrome-linux64.zip https://storage.googleapis.com/chrome-for-testing-public/129.0.6668.70/linux64/chrome-linux64.zip \
+    && unzip /tmp/chrome-linux64.zip -d /opt/ \
+    && rm /tmp/chrome-linux64.zip \
+    && ln -s /opt/chrome-linux64/chrome /usr/bin/google-chrome
 
-# Instalar o ChromeDriver usando a versão compatível mais recente
-RUN CHROME_VERSION=$(google-chrome --version | grep -oP '\d+\.\d+\.\d+') && \
-    CHROME_DRIVER_VERSION=$(curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE) && \
-    wget -O /tmp/chromedriver.zip https://chromedriver.storage.googleapis.com/$CHROME_DRIVER_VERSION/chromedriver_linux64.zip && \
-    unzip /tmp/chromedriver.zip -d /usr/local/bin/ && \
-    rm /tmp/chromedriver.zip
+# Baixar e instalar o ChromeDriver da URL fornecida
+RUN wget -O /tmp/chromedriver-linux64.zip https://storage.googleapis.com/chrome-for-testing-public/129.0.6668.70/linux64/chromedriver-linux64.zip \
+    && unzip /tmp/chromedriver-linux64.zip -d /usr/local/bin/ \
+    && rm /tmp/chromedriver-linux64.zip
 
-# Definir o chromedriver no PATH
+# Definir o ChromeDriver no PATH
 ENV PATH="/usr/local/bin/chromedriver:${PATH}"
+
+# Definir permissões de execução para o Chrome e ChromeDriver
+RUN chmod +x /usr/bin/google-chrome /usr/local/bin/chromedriver
 
 # Copiar os arquivos do projeto para dentro do container
 WORKDIR /app
