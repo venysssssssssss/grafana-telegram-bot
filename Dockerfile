@@ -26,11 +26,9 @@ RUN wget -O /tmp/chrome-linux64.zip https://storage.googleapis.com/chrome-for-te
 
 # Baixar e instalar o ChromeDriver da URL fornecida
 RUN wget -O /tmp/chromedriver-linux64.zip https://storage.googleapis.com/chrome-for-testing-public/129.0.6668.70/linux64/chromedriver-linux64.zip \
-    && unzip /tmp/chromedriver-linux64.zip -d /usr/local/bin/ \
+    && unzip /tmp/chromedriver-linux64.zip -d /tmp/ \
+    && mv /tmp/chromedriver-linux64/chromedriver /usr/local/bin/ \
     && rm /tmp/chromedriver-linux64.zip
-
-# Definir o ChromeDriver no PATH
-ENV PATH="/usr/local/bin/chromedriver:${PATH}"
 
 # Definir permissões de execução para o Chrome e ChromeDriver
 RUN chmod +x /usr/bin/google-chrome /usr/local/bin/chromedriver
