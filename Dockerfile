@@ -1,21 +1,23 @@
-# Use a imagem base oficial do Python
+# Usar uma imagem base do Python
 FROM python:3.12-slim
 
-# Defina o diretório de trabalho
+# Definir o diretório de trabalho dentro do contêiner
 WORKDIR /app
 
-# Copie o arquivo pyproject.toml e poetry.lock para o diretório de trabalho
-COPY pyproject.toml poetry.lock /app/
+# Copiar os arquivos de dependências para o contêiner
+COPY pyproject.toml poetry.lock ./
 
-# Instale o Poetry
+# Instalar o Poetry
 RUN pip install poetry
 
-# Instale as dependências da aplicação usando o Poetry
-RUN poetry config virtualenvs.create false \
-    && poetry install --no-dev --no-interaction --no-ansi
+# Instalar as dependências do projeto
+RUN poetry install --no-root
 
-# Copie o restante da aplicação para o container
-COPY . /app
+# Copiar o código da aplicação
+COPY . .
+
+# Configurar a variável de ambiente para o caminho do Chrome
+ENV PATH="/usr/bin/google-chrome:${PATH}"
 
 # Comando para rodar a aplicação
 CMD ["poetry", "run", "python", "app/main.py"]
