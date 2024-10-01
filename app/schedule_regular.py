@@ -123,7 +123,7 @@ def schedule_regular_collections(
     Configura o agendamento regular para os dashboards MVP1 e MVP3.
     """
     schedule_dict = {
-        'monday': ['08:05', '12:05', '16:05', '20:05'],
+        'monday': ['08:05', '12:05', '16:30', '20:05'],
         'tuesday': ['08:05', '12:05', '16:05', '20:05'],
         'wednesday': ['08:05', '12:05', '16:05', '20:05'],
         'thursday': ['08:05', '18:19', '16:05', '20:05'],
