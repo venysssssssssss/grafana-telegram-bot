@@ -50,7 +50,6 @@ def collect_info(driver, dashboard_name, dashboard_url):
             status_xpath = f'{base_xpath}[{row}]/div[7]'
             item = driver.find_element(By.XPATH, item_xpath).text
             status = driver.find_element(By.XPATH, status_xpath).text
-            logging.info(f'{dashboard_name} - Item: {item}, Status: {status}')
             if (
                 item == 'ValidarVendasLiberadas'
                 and status == 'Falha de sistema'

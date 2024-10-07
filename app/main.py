@@ -151,8 +151,19 @@ def process_dashboard(
                 'relatorio_path'
             ]  # Certifique-se de que este caminho é específico para cada dashboard
 
-            # Excluir o arquivo após processar o resultado
+            # Enviar mensagem APENAS após garantir que o arquivo certo foi processado
             if initial_run and relatorio_path:
+                logger.info('Relatorio path: ', relatorio_path)
+                send_informational_message(
+                    driver,
+                    result['tme'],
+                    result['tef'],
+                    result['backlog'],
+                    relatorio_path,  # Caminho correto para cada dashboard
+                    dashboard_name,
+                )
+
+                # Excluir o arquivo após enviar a mensagem
                 logger.info(f'Removendo o arquivo {relatorio_path}')
                 os.remove(relatorio_path)
                 logger.info(f'Arquivo {relatorio_path} removido com sucesso.')
