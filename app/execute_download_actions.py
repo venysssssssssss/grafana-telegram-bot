@@ -72,6 +72,7 @@ def execute_download_actions(
         f'Download concluído e arquivo renomeado para {relatorio_path}'
     )
 
+    time.sleep(0.5)
     # Fechar o elemento após o download
     click_once(
         '//*[@id="reactRoot"]/div[1]/div/div[3]/div[3]/div/div/div[1]/div[1]/button'
