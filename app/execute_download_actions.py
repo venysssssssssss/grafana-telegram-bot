@@ -20,12 +20,13 @@ def execute_download_actions(
     realizar o download de um arquivo e renomeá-lo, e finaliza com o fechamento de um elemento.
     """
 
-    def click_once(xpath, wait_time=15):
+    def click_once(xpath, wait_time=25):
         try:
             # Espera até o elemento estar clicável
             element = WebDriverWait(browser_manager.driver, wait_time).until(
                 EC.element_to_be_clickable((By.XPATH, xpath))
             )
+            time.sleep(1.5)
             element.click()
             logger.info(f'Elemento {xpath} clicado com sucesso.')
         except Exception as e:
@@ -72,7 +73,7 @@ def execute_download_actions(
         f'Download concluído e arquivo renomeado para {relatorio_path}'
     )
 
-    time.sleep(0.5)
+    time.sleep(2)
     # Fechar o elemento após o download
     click_once(
         '//*[@id="reactRoot"]/div[1]/div/div[3]/div[3]/div/div/div[1]/div[1]/button'
