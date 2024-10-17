@@ -41,6 +41,14 @@ def send_telegram_message(message, max_retries=3):
     logging.error('Falha ao enviar a mensagem após várias tentativas.')
 
 
+def get_dashboard_link(dashboard_name):
+    """Retorna o link correto de detalhes com base no nome do dashboard."""
+    links = {
+        'mvp1': 'https://e-bots.co/grafana/goto/2BJnrGrSR?orgId=1',
+        'mvp3': 'https://e-bots.co/grafana/goto/aUehNBRNR?orgId=1',
+    }
+    return links.get(dashboard_name, 'https://e-bots.co/grafana')  # Fallback genérico
+
 def send_informational_message(
     driver, tme_xpath, tef_xpath, backlog_xpath, relatorio_path, dashboard_name
 ):
@@ -49,19 +57,9 @@ def send_informational_message(
         data_processor = DataProcessor(relatorio_path)
         metrics = data_processor.analyze_data()
 
-        # Garantir que dashboard_name esteja em maiúsculas
         dashboard_name_upper = dashboard_name.upper()
+        link_detalhes = get_dashboard_link(dashboard_name)  # Link dinâmico
 
-        # Definir o link correto com base no dashboard - Executar sempre
-        link_detalhes = ''
-        if dashboard_name == 'mvp1':
-            link_detalhes = 'https://e-bots.co/grafana/goto/2BJnrGrSR?orgId=1'
-        elif dashboard_name == 'mvp3':
-            link_detalhes = 'https://e-bots.co/grafana/goto/aUehNBRNR?orgId=1'
-        else:
-            link_detalhes = 'https://e-bots.co/grafana'  # Link genérico de fallback
-
-        # Tratar casos onde não há dados
         if metrics == 'no_data':
             message = (
                 f'🤖 *Automação PAP - {dashboard_name_upper}*\n{datetime.date.today().strftime("%d/%m/%Y")}\n\n'
@@ -72,20 +70,17 @@ def send_informational_message(
             logging.info(f'Mensagem de ociosidade enviada para {dashboard_name_upper}!')
             return
 
-        # Caso existam dados, processar os KPIs e enviar a mensagem informativa
+        # Processamento dos KPIs
         count_success = metrics.get('count_success', 0)
         count_business_error = metrics.get('count_business_error', 0)
         count_system_failure = metrics.get('count_system_failure', 0)
         total_processos = count_success + count_business_error + count_system_failure
 
-        if total_processos > 0:
-            percent_success = (count_success / total_processos) * 100
-            percent_business_error = (count_business_error / total_processos) * 100
-            percent_system_failure = (count_system_failure / total_processos) * 100
-        else:
-            percent_success = percent_business_error = percent_system_failure = 0
+        percent_success = (count_success / total_processos) * 100 if total_processos else 0
+        percent_business_error = (count_business_error / total_processos) * 100 if total_processos else 0
+        percent_system_failure = (count_system_failure / total_processos) * 100 if total_processos else 0
 
-        # Criar a mensagem detalhada para todos os KPIs
+        # Mensagem formatada
         message = (
             f'🤖 *Automação PAP - {dashboard_name_upper}*\n{datetime.date.today().strftime("%d/%m/%Y")}\n\n'
             f'*Status do robô*: Operando ✅\n\n'
@@ -99,10 +94,8 @@ def send_informational_message(
             f'🌐*Link para mais detalhes*: {link_detalhes}\n\n'
             f'🔰 Informacional desenv. - Projetos Tahto Aut/IA 🔰'
         )
-        # Enviar a mensagem com o link correto
         send_telegram_message(message)
         logging.info(f'Mensagem processada e enviada para {dashboard_name_upper}!')
-
     except KeyError as e:
         logging.exception('Chave ausente nos dados: %s', e)
     except Exception as e:
