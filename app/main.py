@@ -112,6 +112,7 @@ def process_dashboard(
             logger.info(f'Acessando o {dashboard_name}: {dashboard_url}')
             time.sleep(5)
 
+            # Realizar autenticação somente para mvp1
             if dashboard_name == 'mvp1':
                 auth = Authenticator(driver)
                 auth.authenticate()
@@ -120,25 +121,51 @@ def process_dashboard(
             driver.refresh()
             time.sleep(5)
 
+    except NoSuchElementException as e:
+        logger.error(f'Erro de autenticação no {dashboard_name}: {e}')
+        return
+    except WebDriverException as e:
+        logger.error(
+            f'Erro de WebDriver ao tentar acessar {dashboard_name}: {e}'
+        )
+        return
+    except Exception as e:
+        logger.error(
+            f'Erro inesperado ao tentar acessar {dashboard_name}: {e}'
+        )
+        return
+
+    try:
         result = collect_data_from_dashboard(
-            driver, dashboard_name, actions, browser_manager, download_path, initial_run
+            driver,
+            dashboard_name,
+            actions,
+            browser_manager,
+            download_path,
+            initial_run,
         )
 
+        # Garantir que o caminho correto do relatório está sendo processado para cada dashboard
         if result:
-            relatorio_path = result['relatorio_path']
+            relatorio_path = result[
+                'relatorio_path'
+            ]  # Certifique-se de que este caminho é específico para cada dashboard
 
+            # Enviar mensagem APENAS após garantir que o arquivo certo foi processado
             if initial_run and relatorio_path:
-                logger.info(f'Relatório baixado: {relatorio_path}')
+                logger.info('Relatorio path: ', relatorio_path)
 
                 send_informational_message(
                     driver,
                     result['tme'],
                     result['tef'],
                     result['backlog'],
-                    relatorio_path,
+                    relatorio_path,  # Caminho correto para cada dashboard
                     dashboard_name,
                 )
 
+                # Excluir o arquivo após enviar a mensagem
+                logger.info(f'Removendo o arquivo {relatorio_path}')
                 os.remove(relatorio_path)
                 logger.info(f'Arquivo {relatorio_path} removido com sucesso.')
 
@@ -146,7 +173,6 @@ def process_dashboard(
         else:
             logger.error(f'Falha ao coletar dados do {dashboard_name}')
             return None
-
     except Exception as e:
         logger.error(f'Erro ao processar o dashboard {dashboard_name}: {e}')
         return None
