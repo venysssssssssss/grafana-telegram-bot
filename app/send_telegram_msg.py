@@ -52,17 +52,19 @@ def get_dashboard_link(dashboard_name):
 def send_informational_message(
     driver, tme_xpath, tef_xpath, backlog_xpath, relatorio_path, dashboard_name
 ):
+    dashboard_name_upper = dashboard_name.upper()  # Inicializar fora do try
+
     try:
         # Usar o caminho correto passado como argumento (relatorio_path)
         data_processor = DataProcessor(relatorio_path)
         metrics = data_processor.analyze_data()
 
-        dashboard_name_upper = dashboard_name.upper()
         link_detalhes = get_dashboard_link(dashboard_name)  # Link dinâmico
 
         if metrics == 'no_data':
             message = (
-                f'🤖 *Automação PAP - {dashboard_name_upper}*\n{datetime.date.today().strftime("%d/%m/%Y")}\n\n'
+                f'🤖 *Automação PAP - {dashboard_name_upper}*\n'
+                f'{datetime.date.today().strftime("%d/%m/%Y")}\n\n'
                 'Robô Ocioso (Sem Dados)\n\n'
                 f'🌐*Link para mais detalhes*: {link_detalhes}\n\n'
             )
@@ -82,7 +84,8 @@ def send_informational_message(
 
         # Mensagem formatada
         message = (
-            f'🤖 *Automação PAP - {dashboard_name_upper}*\n{datetime.date.today().strftime("%d/%m/%Y")}\n\n'
+            f'🤖 *Automação PAP - {dashboard_name_upper}*\n'
+            f'{datetime.date.today().strftime("%d/%m/%Y")}\n\n'
             f'*Status do robô*: Operando ✅\n\n'
             f'📓*Informacional até {datetime.datetime.now().strftime("%Hh%M")}*\n'
             f'🗂*Backlog*: {backlog_xpath}\n'
@@ -96,10 +99,14 @@ def send_informational_message(
         )
         send_telegram_message(message)
         logging.info(f'Mensagem processada e enviada para {dashboard_name_upper}!')
+
     except KeyError as e:
         logging.exception('Chave ausente nos dados: %s', e)
+    except ValueError as e:
+        logging.error(f'Erro no processamento do CSV: {e}')
     except Exception as e:
         logging.exception(
             f'Erro inesperado ao enviar mensagem informativa para {dashboard_name_upper}: %s',
             e,
         )
+
