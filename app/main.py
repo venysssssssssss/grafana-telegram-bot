@@ -155,14 +155,7 @@ def process_dashboard(
             if initial_run and relatorio_path:
                 logger.info('Relatorio path: ', relatorio_path)
 
-                send_informational_message(
-                    driver,
-                    result['tme'],
-                    result['tef'],
-                    result['backlog'],
-                    relatorio_path,  # Caminho correto para cada dashboard
-                    dashboard_name,
-                )
+                time.sleep(1)
 
                 # Excluir o arquivo após enviar a mensagem
                 logger.info(f'Removendo o arquivo {relatorio_path}')
