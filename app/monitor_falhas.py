@@ -84,10 +84,10 @@ def monitor_falhas(driver_mvp1, driver_mvp3, url_mvp1, url_mvp3):
             )
 
     # Verificar MVP1 e MVP3 periodicamente
-    schedule.every(2).minutes.do(
+    schedule.every(1).minutes.do(
         verificar_falhas, 'MVP1', driver_mvp1, url_mvp1
     )
-    schedule.every(2).minutes.do(
+    schedule.every(1).minutes.do(
         verificar_falhas, 'MVP3', driver_mvp3, url_mvp3
     )
 
