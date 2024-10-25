@@ -1,7 +1,7 @@
 import logging
 import os
 import time
-
+import urllib3
 import schedule
 from action_manager import ActionManager
 from authentication import Authenticator
@@ -11,18 +11,14 @@ from execute_download_actions import execute_download_actions
 from monitor_falhas import iniciar_monitoramento, pausar_monitoramento
 from selenium.common.exceptions import (NoSuchElementException,
                                         WebDriverException)
+from selenium.webdriver.remote.remote_connection import RemoteConnection
 from send_telegram_msg import send_informational_message
+
+urllib3.util.retry.Retry.DEFAULT_BACKOFF_MAX = 1
 
 # Configurar logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 logger = logging.getLogger()
-
-
-dashboards = {
-    'mvp1': 'https://e-bots.co/grafana/d/b12d0f69-2249-46c9-9a3d-da56588d47f4/ebots-detalhe-do-robo?orgId=1&refresh=5m&var-Robot=tahto-pap&var-Robot_id=51&var-exibir_itens=processados&var-exibir_10000&var-exibir_tarefas=todas',
-    'mvp3': 'https://e-bots.co/grafana/d/b12d0f69-2249-46c9-9a3d-da56588d47f4/ebots-detalhe-do-robo?var-Robot=tahto-pap-mvp3&orgId=1&refresh=5m&var-Robot_id=92&var-exibir_itens=processados&var-exibir=10000&var-exibir_tarefas=todas&from=now%2Fd&to=now%2Fd',
-}
-
 
 def download_and_send_message_for_dashboard(
     dashboard_name,
@@ -37,21 +33,14 @@ def download_and_send_message_for_dashboard(
         pausar_monitoramento()
         logger.info(f'Iniciando processo para o dashboard {dashboard_name}')
 
-        # Obter a URL do dashboard a partir do dicionário
-        dashboard_url = dashboards.get(dashboard_name.lower())
-        if not dashboard_url:
-            logger.error(f'URL não definida para {dashboard_name}')
-            return  # Evita continuar sem uma URL válida
-
-        logger.info(f'Acessando {dashboard_name} em {dashboard_url}')
+        logger.info(f'Acessando {dashboard_name}')
         if initial_run:
-            driver.get(dashboard_url)
             time.sleep(5)  # Aguardar carregamento do dashboard
 
-            if dashboard_name.lower() == 'mvp1':
-                auth = Authenticator(driver)
-                auth.authenticate()
-                logger.info(f'Autenticação concluída para {dashboard_name}')
+            #if dashboard_name.lower() == 'mvp1':
+             #   auth = Authenticator(driver)
+              #  auth.authenticate()
+               # logger.info(f'Autenticação concluída para {dashboard_name}')
         else:
             driver.refresh()
             time.sleep(5)  # Esperar recarregamento da página
@@ -177,7 +166,7 @@ def schedule_regular_collections(
         'tuesday': ['08:05', '12:05', '16:15', '20:05'],
         'wednesday': ['08:05', '12:05', '16:15', '20:05'],
         'thursday': ['08:05', '12:05', '16:15', '20:05'],
-        'friday': ['08:05', '13:05', '16:15', '20:05'],
+        'friday': ['08:05', '14:06', '16:15', '20:05'],
         'saturday': ['09:05', '12:05', '15:55'],
     }
 
