@@ -1,13 +1,18 @@
+import logging
 import os
 import shutil
 import time
 
+import psutil
 from selenium import webdriver
 from selenium.common.exceptions import \
     NoSuchElementException  # Import necessário
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
+logger = logging.getLogger()
 
 
 class BrowserManager:
@@ -24,7 +29,7 @@ class BrowserManager:
 
         service = Service(driver_path)
         options = webdriver.ChromeOptions()
-        options.add_argument('--headless')
+        # options.add_argument('--headless')
         options.add_argument(
             '--no-sandbox'
         )  # Adicionado para evitar problemas de sandbox
@@ -114,5 +119,53 @@ class BrowserManager:
         else:
             raise ValueError(f'Unexpected file type: {ext}')
 
+    def reiniciar_navegador(self):
+        """Reinicia o navegador e garante que todos os processos sejam encerrados."""
+        try:
+            if self.driver:
+                self.fechar_todas_as_guias()
+                self.driver.quit()
+                logger.info('Navegador fechado.')
+
+            self.encerrar_processos_chrome()
+
+            self.driver = self.start_browser(self.download_directory)
+            logger.info('Navegador reiniciado com sucesso.')
+        except Exception as e:
+            logger.error(f'Erro ao reiniciar o navegador: {e}')
+            raise e
+
+    def fechar_todas_as_guias(self):
+        """Fecha todas as guias abertas no navegador."""
+        try:
+            if self.driver:
+                for window in self.driver.window_handles:
+                    self.driver.switch_to.window(window)
+                    self.driver.close()
+                logger.info('Todas as guias foram fechadas.')
+        except Exception as e:
+            logger.error(f'Erro ao fechar as guias: {e}')
+
+    def encerrar_processos_chrome(self):
+        """Encerra todos os processos do Chrome e Chromedriver."""
+        for proc in psutil.process_iter(['pid', 'name']):
+            try:
+                if (
+                    'chrome' in proc.info['name'].lower()
+                    or 'chromedriver' in proc.info['name'].lower()
+                ):
+                    psutil.Process(proc.info['pid']).kill()
+                    logger.info(f'Processo {proc.info["name"]} encerrado.')
+            except (
+                psutil.NoSuchProcess,
+                psutil.AccessDenied,
+                psutil.ZombieProcess,
+            ):
+                pass
+
     def quit(self):
-        self.driver.quit()
+        """Fecha o navegador e encerra todos os processos relacionados."""
+        if self.driver:
+            self.driver.quit()
+            self.encerrar_processos_chrome()
+            self.driver = None
