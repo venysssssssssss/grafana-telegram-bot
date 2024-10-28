@@ -4,20 +4,10 @@ import time
 from threading import Thread
 
 import schedule
-from action_manager import ActionManager
-from authentication import Authenticator
 from browser import BrowserManager
 from dashboard_xpaths import DASHBOARD_XPATHS
-from execute_download_actions import execute_download_actions
 from monitor_falhas import (iniciar_monitoramento, monitor_falhas,
                             pausar_monitoramento)
-from process_dashboard import process_dashboard
-from schedule_regular import \
-    schedule_regular_collections  # Importar o agendamento
-from selenium.common.exceptions import (NoSuchElementException,
-                                        WebDriverException)
-from send_telegram_msg import send_informational_message
-
 # Configurar logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 logger = logging.getLogger()
@@ -34,45 +24,9 @@ def main():
     browser_manager = BrowserManager(os.path.join(os.getcwd(), 'data'))
     driver_mvp1 = browser_manager.driver
     driver_mvp3 = browser_manager.driver
-    download_path = browser_manager.clean_download_directory('data')
-
-    # Configurar o gerenciador de ações para MVP1 e MVP3
-    actions_mvp1 = ActionManager(driver_mvp1)
-    actions_mvp3 = ActionManager(driver_mvp3)
 
     try:
         logger.info('Iniciando o agendamento das tarefas...')
-
-        # Coletar KPIs iniciais (se necessário)
-        kpis_mvp1 = process_dashboard(
-            driver_mvp1,
-            'mvp1',
-            dashboards['mvp1'],
-            actions_mvp1,
-            browser_manager,
-            download_path,
-            initial_run=True,
-        )
-
-        kpis_mvp3 = process_dashboard(
-            driver_mvp3,
-            'mvp3',
-            dashboards['mvp3'],
-            actions_mvp3,
-            browser_manager,
-            download_path,
-            initial_run=True,
-        )
-
-        # Configurar o agendamento regular das tarefas
-        schedule_regular_collections(
-            driver_mvp1,
-            actions_mvp1,
-            actions_mvp3,
-            browser_manager,
-            kpis_mvp1,
-            kpis_mvp3,
-        )
 
         # Iniciar monitoramento de falhas em uma thread separada
         monitor_falhas_thread = Thread(
