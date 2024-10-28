@@ -4,8 +4,8 @@ import os
 import traceback
 
 import requests
-from browser import BrowserManager
-from data_processing import DataProcessor
+from app.browser import BrowserManager
+from app.data_processing import DataProcessor
 
 logging.basicConfig(
     level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s'
