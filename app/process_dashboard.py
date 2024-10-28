@@ -2,11 +2,12 @@ import logging
 import os
 import time
 
-from authentication import Authenticator
-from collect_data import collect_data_from_dashboard
-from dashboard_xpaths import DASHBOARD_XPATHS
+from app.authentication import Authenticator
+from app.collect_data import collect_data_from_dashboard
+from app.dashboard_xpaths import DASHBOARD_XPATHS
 from selenium.common.exceptions import (NoSuchElementException,
                                         WebDriverException)
+from app.send_telegram_msg import send_informational_message
 
 # Configurar logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
@@ -71,7 +72,14 @@ def process_dashboard(
             if initial_run and relatorio_path:
                 logger.info('Relatorio path: %s', relatorio_path)
 
-                pass
+                send_informational_message(
+                    driver,
+                    result['tme'],
+                    result['tef'],
+                    result['backlog'],
+                    relatorio_path,  # Caminho correto para cada dashboard
+                    dashboard_name,
+                )
 
                 # Excluir o arquivo após enviar a mensagem
                 logger.info(f'Removendo o arquivo {relatorio_path}')
