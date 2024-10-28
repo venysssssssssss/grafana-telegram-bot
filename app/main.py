@@ -4,179 +4,13 @@ import time
 from threading import Thread
 
 import schedule
-from action_manager import ActionManager
-from authentication import Authenticator
 from browser import BrowserManager
 from dashboard_xpaths import DASHBOARD_XPATHS
-from execute_download_actions import execute_download_actions
 from monitor_falhas import (iniciar_monitoramento, monitor_falhas,
                             pausar_monitoramento)
-from schedule_regular import \
-    schedule_regular_collections  # Importar o agendamento
-from selenium.common.exceptions import (NoSuchElementException,
-                                        WebDriverException)
-from send_telegram_msg import send_informational_message
-
 # Configurar logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 logger = logging.getLogger()
-
-
-def collect_data_from_dashboard(
-    driver,
-    dashboard_name,
-    actions,
-    browser_manager,
-    download_path,
-    initial_run=True,
-):
-    xpaths = DASHBOARD_XPATHS.get(dashboard_name)
-
-    if not xpaths:
-        logger.error(f'Dashboard {dashboard_name} não encontrado!')
-        return None
-
-    try:
-        if initial_run:
-            # Interagir com os elementos específicos do dashboard apenas na primeira vez
-            actions.click_element(xpaths['var_exibir'])
-            actions.click_element(xpaths['opcao_exibir'])
-
-        # Scroll até a tabela - Executado sempre antes de coletar dados ou fazer download
-        browser_manager.scroll_to_table()
-        logger.info(f'Scroll até a tabela concluído para {dashboard_name}')
-
-        if initial_run:
-            # Executar ações de download com o nome do dashboard
-            relatorio_path = execute_download_actions(
-                actions, browser_manager, download_path, dashboard_name
-            )
-            logger.info(
-                f'Relatório baixado para o {dashboard_name} no caminho: {relatorio_path}'
-            )
-        else:
-            relatorio_path = None
-
-        # Coletar TME, TEF, e Backlog
-        tme_element = actions.find_element(xpaths['tme'])
-        tme_xpath = (
-            tme_element.text if tme_element.text != 'No data' else '00:00:00'
-        )
-
-        tef_element = actions.find_element(xpaths['tef'])
-        tef_xpath = (
-            tef_element.text if tef_element.text != 'No data' else '00:00:00'
-        )
-
-        backlog_xpath = actions.find_element(xpaths['backlog']).text
-
-        logger.info(
-            f'KPIs coletados para {dashboard_name}: TME={tme_xpath}, TEF={tef_xpath}, Backlog={backlog_xpath}'
-        )
-
-        return {
-            'tme': tme_xpath,
-            'tef': tef_xpath,
-            'backlog': backlog_xpath,
-            'relatorio_path': relatorio_path,
-        }
-    except NoSuchElementException as e:
-        logger.error(
-            f'Elemento não encontrado durante a coleta de dados no {dashboard_name}: {e}'
-        )
-        return None
-    except WebDriverException as e:
-        logger.error(
-            f'Erro no WebDriver durante a coleta de dados no {dashboard_name}: {e}'
-        )
-        return None
-    except Exception as e:
-        logger.error(
-            f'Erro inesperado ao coletar dados do {dashboard_name}: {e}'
-        )
-        return None
-
-
-def process_dashboard(
-    driver,
-    dashboard_name,
-    dashboard_url,
-    actions,
-    browser_manager,
-    download_path,
-    initial_run=True,
-):
-    try:
-        if initial_run:
-            driver.get(dashboard_url)
-            logger.info(f'Acessando o {dashboard_name}: {dashboard_url}')
-            time.sleep(5)
-
-            # Realizar autenticação somente para mvp1
-            if dashboard_name == 'mvp1':
-                auth = Authenticator(driver)
-                auth.authenticate()
-                logger.info(f'Autenticação concluída para {dashboard_name}')
-        else:
-            driver.refresh()
-            time.sleep(5)
-
-    except NoSuchElementException as e:
-        logger.error(f'Erro de autenticação no {dashboard_name}: {e}')
-        return
-    except WebDriverException as e:
-        logger.error(
-            f'Erro de WebDriver ao tentar acessar {dashboard_name}: {e}'
-        )
-        return
-    except Exception as e:
-        logger.error(
-            f'Erro inesperado ao tentar acessar {dashboard_name}: {e}'
-        )
-        return
-
-    try:
-        result = collect_data_from_dashboard(
-            driver,
-            dashboard_name,
-            actions,
-            browser_manager,
-            download_path,
-            initial_run,
-        )
-
-        # Garantir que o caminho correto do relatório está sendo processado para cada dashboard
-        if result:
-            relatorio_path = result[
-                'relatorio_path'
-            ]  # Certifique-se de que este caminho é específico para cada dashboard
-
-            # Enviar mensagem APENAS após garantir que o arquivo certo foi processado
-            if initial_run and relatorio_path:
-                logger.info('Relatorio path: ', relatorio_path)
-
-                send_informational_message(
-                    driver,
-                    result['tme'],
-                    result['tef'],
-                    result['backlog'],
-                    relatorio_path,  # Caminho correto para cada dashboard
-                    dashboard_name,
-                )
-
-                # Excluir o arquivo após enviar a mensagem
-                logger.info(f'Removendo o arquivo {relatorio_path}')
-                os.remove(relatorio_path)
-                logger.info(f'Arquivo {relatorio_path} removido com sucesso.')
-
-            return result
-        else:
-            logger.error(f'Falha ao coletar dados do {dashboard_name}')
-            return None
-    except Exception as e:
-        logger.error(f'Erro ao processar o dashboard {dashboard_name}: {e}')
-        return None
-
 
 
 def main():
@@ -190,45 +24,9 @@ def main():
     browser_manager = BrowserManager(os.path.join(os.getcwd(), 'data'))
     driver_mvp1 = browser_manager.driver
     driver_mvp3 = browser_manager.driver
-    download_path = browser_manager.clean_download_directory('data')
-
-    # Configurar o gerenciador de ações para MVP1 e MVP3
-    actions_mvp1 = ActionManager(driver_mvp1)
-    actions_mvp3 = ActionManager(driver_mvp3)
 
     try:
         logger.info('Iniciando o agendamento das tarefas...')
-
-        # Coletar KPIs iniciais (se necessário)
-        kpis_mvp1 = process_dashboard(
-            driver_mvp1,
-            'mvp1',
-            dashboards['mvp1'],
-            actions_mvp1,
-            browser_manager,
-            download_path,
-            initial_run=True,
-        )
-
-        kpis_mvp3 = process_dashboard(
-            driver_mvp3,
-            'mvp3',
-            dashboards['mvp3'],
-            actions_mvp3,
-            browser_manager,
-            download_path,
-            initial_run=True,
-        )
-
-        # Configurar o agendamento regular das tarefas
-        schedule_regular_collections(
-            driver_mvp1,
-            actions_mvp1,
-            actions_mvp3,
-            browser_manager,
-            kpis_mvp1,
-            kpis_mvp3,
-        )
 
         # Iniciar monitoramento de falhas em uma thread separada
         monitor_falhas_thread = Thread(

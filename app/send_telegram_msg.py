@@ -4,8 +4,8 @@ import os
 import traceback
 
 import requests
-from browser import BrowserManager
-from data_processing import DataProcessor
+from app.browser import BrowserManager
+from app.data_processing import DataProcessor
 
 logging.basicConfig(
     level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s'
@@ -47,7 +47,10 @@ def get_dashboard_link(dashboard_name):
         'mvp1': 'https://e-bots.co/grafana/goto/2BJnrGrSR?orgId=1',
         'mvp3': 'https://e-bots.co/grafana/goto/aUehNBRNR?orgId=1',
     }
-    return links.get(dashboard_name, 'https://e-bots.co/grafana')  # Fallback genérico
+    return links.get(
+        dashboard_name, 'https://e-bots.co/grafana'
+    )  # Fallback genérico
+
 
 def send_informational_message(
     driver, tme_xpath, tef_xpath, backlog_xpath, relatorio_path, dashboard_name
@@ -69,18 +72,32 @@ def send_informational_message(
                 f'🌐*Link para mais detalhes*: {link_detalhes}\n\n'
             )
             send_telegram_message(message)
-            logging.info(f'Mensagem de ociosidade enviada para {dashboard_name_upper}!')
+            logging.info(
+                f'Mensagem de ociosidade enviada para {dashboard_name_upper}!'
+            )
             return
 
         # Processamento dos KPIs
         count_success = metrics.get('count_success', 0)
         count_business_error = metrics.get('count_business_error', 0)
         count_system_failure = metrics.get('count_system_failure', 0)
-        total_processos = count_success + count_business_error + count_system_failure
+        total_processos = (
+            count_success + count_business_error + count_system_failure
+        )
 
-        percent_success = (count_success / total_processos) * 100 if total_processos else 0
-        percent_business_error = (count_business_error / total_processos) * 100 if total_processos else 0
-        percent_system_failure = (count_system_failure / total_processos) * 100 if total_processos else 0
+        percent_success = (
+            (count_success / total_processos) * 100 if total_processos else 0
+        )
+        percent_business_error = (
+            (count_business_error / total_processos) * 100
+            if total_processos
+            else 0
+        )
+        percent_system_failure = (
+            (count_system_failure / total_processos) * 100
+            if total_processos
+            else 0
+        )
 
         # Mensagem formatada
         message = (
@@ -98,7 +115,9 @@ def send_informational_message(
             f'🔰 Informacional desenv. - Projetos Tahto Aut/IA 🔰'
         )
         send_telegram_message(message)
-        logging.info(f'Mensagem processada e enviada para {dashboard_name_upper}!')
+        logging.info(
+            f'Mensagem processada e enviada para {dashboard_name_upper}!'
+        )
 
     except KeyError as e:
         logging.exception('Chave ausente nos dados: %s', e)
@@ -109,4 +128,3 @@ def send_informational_message(
             f'Erro inesperado ao enviar mensagem informativa para {dashboard_name_upper}: %s',
             e,
         )
-
