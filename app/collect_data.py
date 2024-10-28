@@ -1,7 +1,7 @@
 import logging
 
-from dashboard_xpaths import DASHBOARD_XPATHS
-from execute_download_actions import execute_download_actions
+from app.dashboard_xpaths import DASHBOARD_XPATHS
+from app.execute_download_actions import execute_download_actions
 from selenium.common.exceptions import (NoSuchElementException,
                                         WebDriverException)
 
