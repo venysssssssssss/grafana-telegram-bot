@@ -2,9 +2,11 @@ import logging
 import os
 import shutil
 import time
+
 import psutil
 from selenium import webdriver
-from selenium.common.exceptions import WebDriverException, NoSuchElementException
+from selenium.common.exceptions import (NoSuchElementException,
+                                        WebDriverException)
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
@@ -12,9 +14,12 @@ from selenium.webdriver.common.by import By
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 logger = logging.getLogger()
 
+
 class BrowserManager:
     def __init__(self, download_directory='data'):
-        self.download_directory = self.clean_download_directory(download_directory)
+        self.download_directory = self.clean_download_directory(
+            download_directory
+        )
         self.driver = None  # Inicializa sem instância do navegador
         self.start_browser()
 
@@ -26,8 +31,8 @@ class BrowserManager:
         service = Service(driver_path)
         options = webdriver.ChromeOptions()
         options.add_argument('--no-sandbox')
-        options.add_argument("--remote-debugging-port=9222")
-        options.add_argument("--timeout=300")
+        options.add_argument('--remote-debugging-port=9222')
+        options.add_argument('--timeout=300')
         options.add_argument('--disable-dev-shm-usage')
         options.add_argument('--disable-gpu')
         options.add_argument('--window-size=1366,1080')
@@ -44,7 +49,7 @@ class BrowserManager:
             self.driver = webdriver.Chrome(service=service, options=options)
             self.driver.implicitly_wait(10)
             self.driver.set_page_load_timeout(60)
-            logger.info("Navegador iniciado com sucesso.")
+            logger.info('Navegador iniciado com sucesso.')
         except WebDriverException as e:
             logger.error(f'Erro ao iniciar o navegador: {e}')
             raise
@@ -73,16 +78,25 @@ class BrowserManager:
         """Encerra todos os processos do Chrome e Chromedriver."""
         for proc in psutil.process_iter(['pid', 'name']):
             try:
-                if 'chrome' in proc.info['name'].lower() or 'chromedriver' in proc.info['name'].lower():
+                if (
+                    'chrome' in proc.info['name'].lower()
+                    or 'chromedriver' in proc.info['name'].lower()
+                ):
                     psutil.Process(proc.info['pid']).kill()
                     logger.info(f'Processo {proc.info["name"]} encerrado.')
-            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+            except (
+                psutil.NoSuchProcess,
+                psutil.AccessDenied,
+                psutil.ZombieProcess,
+            ):
                 pass
 
     def scroll_to_table(self):
         """Executa o scroll até a tabela alvo."""
         try:
-            scrollbar = self.driver.find_element(By.XPATH, '//*[@id="pageContent"]/div[3]/div/div[3]/div')
+            scrollbar = self.driver.find_element(
+                By.XPATH, '//*[@id="pageContent"]/div[3]/div/div[3]/div'
+            )
             action = ActionChains(self.driver)
             action.click_and_hold(scrollbar).perform()
             for _ in range(6):
@@ -96,12 +110,18 @@ class BrowserManager:
 
     def scroll_until_bottom(self):
         """Scroll até o final da página caso o scrollbar não seja encontrado."""
-        last_height = self.driver.execute_script('return document.body.scrollHeight')
+        last_height = self.driver.execute_script(
+            'return document.body.scrollHeight'
+        )
         new_height = last_height
         while new_height == last_height:
-            self.driver.execute_script('window.scrollTo(0, document.body.scrollHeight);')
+            self.driver.execute_script(
+                'window.scrollTo(0, document.body.scrollHeight);'
+            )
             time.sleep(2)
-            new_height = self.driver.execute_script('return document.body.scrollHeight')
+            new_height = self.driver.execute_script(
+                'return document.body.scrollHeight'
+            )
 
     def clean_download_directory(self, directory):
         """Limpa o diretório de downloads."""
@@ -124,11 +144,20 @@ class BrowserManager:
         """Espera até que o download seja concluído."""
         start_time = time.time()
         while True:
-            files = [f for f in os.listdir(self.download_directory) if not f.endswith('.crdownload')]
+            files = [
+                f
+                for f in os.listdir(self.download_directory)
+                if not f.endswith('.crdownload')
+            ]
             if files:
-                return max([os.path.join(self.download_directory, f) for f in files], key=os.path.getctime)
+                return max(
+                    [os.path.join(self.download_directory, f) for f in files],
+                    key=os.path.getctime,
+                )
             elif time.time() - start_time > timeout:
-                raise TimeoutError('Tempo excedido para conclusão do download.')
+                raise TimeoutError(
+                    'Tempo excedido para conclusão do download.'
+                )
             time.sleep(1)
 
     def rename_latest_file(self, new_name):
