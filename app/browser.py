@@ -16,44 +16,42 @@ logger = logging.getLogger()
 
 
 class BrowserManager:
-    def __init__(self, download_directory='data'):
-        self.download_directory = self.clean_download_directory(
-            download_directory
-        )
-        self.driver = None  # Inicializa sem instância do navegador
-        self.start_browser()
+    def __init__(self, download_directory):
+        self.download_directory = os.path.join(os.getcwd(), download_directory)
+        if not os.path.exists(self.download_directory):
+            os.makedirs(self.download_directory)
+        self.driver = self.start_browser(self.download_directory)
 
-    def start_browser(self):
-        """Inicia uma nova instância do navegador."""
-        self.encerrar_processos_chrome()  # Garante que processos anteriores estão encerrados
+    def start_browser(self, download_path):
+        driver_path = os.path.join(
+            os.getcwd(), '/usr/local/bin/chromedriver'
+        )  # Corrigido caminho absoluto para o chromedriver
 
-        driver_path = os.path.join(os.getcwd(), '/usr/local/bin/chromedriver')
         service = Service(driver_path)
         options = webdriver.ChromeOptions()
         options.add_argument('--headless')
-        options.add_argument('--no-sandbox')
-        options.add_argument('--remote-debugging-port=9222')
-        options.add_argument('--timeout=300')
-        options.add_argument('--disable-dev-shm-usage')
-        options.add_argument('--disable-gpu')
-        options.add_argument('--window-size=1366,1080')
+        options.add_argument(
+            '--no-sandbox'
+        )  # Adicionado para evitar problemas de sandbox
+        options.add_argument(
+            '--disable-dev-shm-usage'
+        )  # Adicionado para evitar problemas de memória compartilhada
+        options.add_argument(
+            '--disable-gpu'
+        )  # Adicionado para evitar problemas com GPU
+        options.add_argument('--window-size=1366,1080')  # Tamanho da janela
+
         options.add_experimental_option(
             'prefs',
             {
-                'download.default_directory': self.download_directory,
+                'download.default_directory': download_path,
                 'download.prompt_for_download': False,
+                'download.directory_upgrade': True,
                 'safebrowsing.enabled': True,
             },
         )
-
-        try:
-            self.driver = webdriver.Chrome(service=service, options=options)
-            self.driver.implicitly_wait(10)
-            self.driver.set_page_load_timeout(60)
-            logger.info('Navegador iniciado com sucesso.')
-        except WebDriverException as e:
-            logger.error(f'Erro ao iniciar o navegador: {e}')
-            raise
+        driver = webdriver.Chrome(service=service, options=options)
+        return driver
 
     def reiniciar_navegador(self):
         """Reinicia o navegador garantindo que todos os processos sejam encerrados."""

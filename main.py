@@ -4,10 +4,12 @@ import time
 from threading import Thread
 
 import schedule
-from browser import BrowserManager
-from dashboard_xpaths import DASHBOARD_XPATHS
-from monitor_falhas import (iniciar_monitoramento, monitor_falhas,
-                            pausar_monitoramento)
+
+from app.browser import BrowserManager
+from app.dashboard_xpaths import DASHBOARD_XPATHS
+from app.monitor_falhas import (iniciar_monitoramento, monitor_falhas,
+                                pausar_monitoramento)
+
 # Configurar logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 logger = logging.getLogger()

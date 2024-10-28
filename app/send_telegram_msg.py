@@ -4,6 +4,7 @@ import os
 import traceback
 
 import requests
+
 from app.browser import BrowserManager
 from app.data_processing import DataProcessor
 

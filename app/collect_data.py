@@ -1,9 +1,10 @@
 import logging
 
-from app.dashboard_xpaths import DASHBOARD_XPATHS
-from app.execute_download_actions import execute_download_actions
 from selenium.common.exceptions import (NoSuchElementException,
                                         WebDriverException)
+
+from app.dashboard_xpaths import DASHBOARD_XPATHS
+from app.execute_download_actions import execute_download_actions
 
 # Configurar logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
