@@ -1,13 +1,8 @@
 name: Monitoramento e Coleta Automática
 
-# O workflow será executado automaticamente quando o repositório receber esse workflow
+# O workflow será executado automaticamente com base no agendamento
 on:
-  workflow_run:
-    workflows: ["Monitoramento e Coleta Automática"]
-    types:
-      - completed
-
-  schedule:  # Mantém o agendamento para os horários especificados
+  schedule:  # Agendamento para os horários especificados
     - cron: '4 8 * * 1-5'   # Segunda a sexta 08:04
     - cron: '4 12 * * 1-5'  # Segunda a sexta 12:04
     - cron: '14 16 * * 1-5' # Segunda a sexta 16:14
@@ -22,21 +17,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Iniciar Monitoramento Imediatamente
+    # Primeira execução: Iniciar monitoramento
+    - name: Iniciar Monitoramento (primeira vez)
       run: |
         echo "Iniciando o monitoramento..."
         curl -X GET http://198.58.120.71:8001/iniciar-monitoramento || echo "Monitoramento já iniciado."
 
+    # Pausar Monitoramento 1 Minuto Antes do Horário
     - name: Pausar Monitoramento 1 Minuto Antes
-      if: ${{ github.event_name == 'schedule' }}
       run: |
         echo "Pausando monitoramento 1 minuto antes do horário..."
         curl -X GET http://198.58.120.71:8001/parar-monitoramento
         echo "Monitoramento pausado com sucesso."
         sleep 60  # Aguarda até o horário exato para executar a coleta
 
+    # Executar Coleta no Horário Exato
     - name: Executar Coleta
-      if: ${{ github.event_name == 'schedule' }}
       run: |
         echo "Executando a coleta..."
         response=$(curl -s -o /dev/null -w "%{http_code}" -X POST http://198.58.120.71:8001/executar-coleta)
@@ -46,8 +42,8 @@ jobs:
         fi
         echo "Coleta executada com sucesso."
 
+    # Retomar Monitoramento Após a Coleta
     - name: Retomar Monitoramento
-      if: ${{ github.event_name == 'schedule' }}
       run: |
         echo "Retomando o monitoramento após a coleta..."
         curl -X GET http://198.58.120.71:8001/iniciar-monitoramento
