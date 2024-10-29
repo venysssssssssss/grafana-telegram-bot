@@ -31,10 +31,12 @@ def process_dashboard(
             time.sleep(5)
 
             # Realizar autenticação somente para mvp1
-            if dashboard_name == 'mvp1':
+            if dashboard_name == 'mvp1' and 'login' in dashboard_url:
                 auth = Authenticator(driver)
                 auth.authenticate()
                 logger.info(f'Autenticação concluída para {dashboard_name}')
+            else:
+                pass
         else:
             driver.refresh()
             time.sleep(5)

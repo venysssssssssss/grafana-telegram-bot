@@ -27,9 +27,11 @@ class BrowserManager:
             os.getcwd(), '/usr/local/bin/chromedriver'
         )  # Corrigido caminho absoluto para o chromedriver
 
+        self.encerrar_processos_chrome()
+
         service = Service(driver_path)
         options = webdriver.ChromeOptions()
-        options.add_argument('--headless')
+        # options.add_argument('--headless')
         options.add_argument(
             '--no-sandbox'
         )  # Adicionado para evitar problemas de sandbox
@@ -57,7 +59,7 @@ class BrowserManager:
         """Reinicia o navegador garantindo que todos os processos sejam encerrados."""
         try:
             self.fechar_navegador()
-            self.start_browser()
+            self.start_browser('data')
         except Exception as e:
             logger.error(f'Erro ao reiniciar o navegador: {e}')
             raise
