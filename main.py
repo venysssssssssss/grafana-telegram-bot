@@ -1,10 +1,8 @@
 import logging
-import os
 import time
 from queue import Queue
 from threading import Lock, Thread
 
-import schedule
 from fastapi import FastAPI, HTTPException
 
 from app.action_manager import ActionManager
