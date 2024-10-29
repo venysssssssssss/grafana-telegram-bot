@@ -146,8 +146,4 @@ async def executar_coleta():
         raise HTTPException(status_code=500, detail=f"Erro ao executar a coleta: {str(e)}")
 
     finally:
-        try:
-            logger.info("Retomando monitoramento após a coleta.")
-            iniciar_monitoramento_thread()
-        except Exception as e:
-            logger.error(f"Erro ao retomar o monitoramento: {e}")
+       logging.info("Reiniciando monitoramento após a coleta.")
