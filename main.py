@@ -87,12 +87,19 @@ async def executar_coleta():
     """Executa a coleta de KPIs e pausa o monitoramento temporariamente."""
     try:
         with monitoramento_lock:
+            # Pausa o monitoramento e tenta reiniciar o navegador
+            logger.info("Pausando monitoramento para coleta de KPIs.")
             pausar_monitoramento()
-            browser_manager.reiniciar_navegador()
-            logger.info('Monitoramento pausado para a coleta de KPIs.')
 
+            # Aguarde um tempo antes de reiniciar o navegador para garantir que todos processos tenham sido liberados
+            time.sleep(2)
+            browser_manager.reiniciar_navegador()
+
+            logger.info("Navegador reiniciado com sucesso.")
+
+            # Executa a coleta para MVP1
             kpis_mvp1 = process_dashboard(
-                driver_mvp1,
+                browser_manager.driver,  # Use a nova instância do navegador
                 'mvp1',
                 dashboards['mvp1'],
                 actions_mvp1,
@@ -101,9 +108,9 @@ async def executar_coleta():
                 initial_run=True,
             )
 
-            # Executa a função process_dashboard para MVP3
+            # Executa a coleta para MVP3
             kpis_mvp3 = process_dashboard(
-                driver_mvp3,
+                browser_manager.driver,
                 'mvp3',
                 dashboards['mvp3'],
                 actions_mvp3,
@@ -113,15 +120,19 @@ async def executar_coleta():
             )
 
             return {
-                'message': 'Coleta executada com sucesso.',
-                'kpis_mvp1': kpis_mvp1,
-                'kpis_mvp3': kpis_mvp3,
+                "message": "Coleta executada com sucesso.",
+                "kpis_mvp1": kpis_mvp1,
+                "kpis_mvp3": kpis_mvp3,
             }
+
     except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f'Erro ao executar a coleta: {e}'
-        )
+        logger.error(f"Erro durante a coleta: {e}")
+        raise HTTPException(status_code=500, detail=f"Erro ao executar a coleta: {str(e)}")
+
     finally:
-        with monitoramento_lock:
+        # Retoma o monitoramento após a coleta
+        try:
+            logger.info("Retomando monitoramento após a coleta.")
             iniciar_monitoramento()
-            logger.info('Monitoramento retomado após a coleta.')
+        except Exception as e:
+            logger.error(f"Erro ao retomar o monitoramento: {e}")

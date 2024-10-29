@@ -56,19 +56,26 @@ class BrowserManager:
         return driver
 
     def reiniciar_navegador(self):
-        """Reinicia o navegador garantindo que todos os processos sejam encerrados."""
+        """Reinicia o navegador com garantia de que todos os processos foram encerrados."""
         try:
-            self.fechar_navegador()
-            self.start_browser('data')
+            self.fechar_navegador()  # Fecha a sessão atual
+
+            # Aguarda para garantir que os processos tenham sido encerrados
+            time.sleep(2)
+            self.driver = self.start_browser(self.download_directory)  # Reinicia o navegador
+
+            logger.info("Navegador reiniciado com sucesso.")
         except Exception as e:
-            logger.error(f'Erro ao reiniciar o navegador: {e}')
+            logger.error(f"Erro ao reiniciar o navegador: {e}")
             raise
+
 
     def fechar_navegador(self):
         """Fecha o navegador e limpa os processos relacionados."""
         try:
             if self.driver:
                 self.driver.quit()
+                self.encerrar_processos_chrome()
                 logger.info('Navegador fechado.')
         except Exception as e:
             logger.error(f'Erro ao fechar o navegador: {e}')

@@ -2,18 +2,18 @@ import logging
 import os
 import time
 
-from selenium.common.exceptions import (NoSuchElementException,
-                                        WebDriverException)
-
+from selenium.common.exceptions import (
+    NoSuchElementException,
+    WebDriverException,
+)
 from app.authentication import Authenticator
 from app.collect_data import collect_data_from_dashboard
 from app.dashboard_xpaths import DASHBOARD_XPATHS
 from app.send_telegram_msg import send_informational_message
 
-# Configurar logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
+# Configuração do logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger()
-
 
 def process_dashboard(
     driver,
@@ -24,75 +24,70 @@ def process_dashboard(
     download_path,
     initial_run=True,
 ):
+    logger.info(f"Iniciando processamento para o dashboard: {dashboard_name}")
+
     try:
         if initial_run:
+            logger.info(f"Acessando o URL do {dashboard_name}: {dashboard_url}")
             driver.get(dashboard_url)
-            logger.info(f'Acessando o {dashboard_name}: {dashboard_url}')
-            time.sleep(5)
+            time.sleep(5)  # Espera para garantir o carregamento completo da página
 
-            # Realizar autenticação somente para mvp1
-            if dashboard_name == 'mvp1' and 'login' in dashboard_url:
+            if dashboard_name == 'mvp1':
+                logger.info(f"Iniciando autenticação para o {dashboard_name}")
                 auth = Authenticator(driver)
                 auth.authenticate()
-                logger.info(f'Autenticação concluída para {dashboard_name}')
+                logger.info(f"Autenticação concluída com sucesso para {dashboard_name}")
             else:
-                pass
+                logger.info(f"Dashboard {dashboard_name} não requer autenticação.")
         else:
+            logger.info(f"Recarregando o dashboard {dashboard_name}.")
             driver.refresh()
             time.sleep(5)
 
     except NoSuchElementException as e:
-        logger.error(f'Erro de autenticação no {dashboard_name}: {e}')
-        return
+        logger.error(f"Elemento não encontrado durante o acesso ao {dashboard_name}: {e}")
+        return None
     except WebDriverException as e:
-        logger.error(
-            f'Erro de WebDriver ao tentar acessar {dashboard_name}: {e}'
-        )
-        return
+        logger.error(f"Erro de WebDriver ao acessar {dashboard_name}: {e}")
+        return None
     except Exception as e:
-        logger.error(
-            f'Erro inesperado ao tentar acessar {dashboard_name}: {e}'
-        )
-        return
+        logger.error(f"Erro inesperado durante acesso ao {dashboard_name}: {e}")
+        return None
 
     try:
+        logger.info(f"Iniciando coleta de dados para {dashboard_name}.")
         result = collect_data_from_dashboard(
-            driver,
-            dashboard_name,
-            actions,
-            browser_manager,
-            download_path,
-            initial_run,
+            driver, dashboard_name, actions, browser_manager, download_path, initial_run
         )
 
-        # Garantir que o caminho correto do relatório está sendo processado para cada dashboard
         if result:
-            relatorio_path = result[
-                'relatorio_path'
-            ]  # Certifique-se de que este caminho é específico para cada dashboard
+            relatorio_path = result.get('relatorio_path')
+            logger.info(f"Caminho do relatório para {dashboard_name}: {relatorio_path}")
 
-            # Enviar mensagem APENAS após garantir que o arquivo certo foi processado
             if initial_run and relatorio_path:
-                logger.info('Relatorio path: %s', relatorio_path)
+                try:
+                    logger.info(f"Enviando mensagem informativa para {dashboard_name}.")
+                    send_informational_message(
+                        driver,
+                        result['tme'],
+                        result['tef'],
+                        result['backlog'],
+                        relatorio_path,
+                        dashboard_name,
+                    )
+                    logger.info(f"Mensagem enviada com sucesso para {dashboard_name}.")
 
-                send_informational_message(
-                    driver,
-                    result['tme'],
-                    result['tef'],
-                    result['backlog'],
-                    relatorio_path,  # Caminho correto para cada dashboard
-                    dashboard_name,
-                )
-
-                # Excluir o arquivo após enviar a mensagem
-                logger.info(f'Removendo o arquivo {relatorio_path}')
-                os.remove(relatorio_path)
-                logger.info(f'Arquivo {relatorio_path} removido com sucesso.')
+                    # Remoção do arquivo após envio
+                    logger.info(f"Removendo o arquivo {relatorio_path}.")
+                    os.remove(relatorio_path)
+                    logger.info(f"Arquivo {relatorio_path} removido com sucesso.")
+                except Exception as e:
+                    logger.error(f"Erro ao enviar mensagem ou remover arquivo: {e}")
 
             return result
         else:
-            logger.error(f'Falha ao coletar dados do {dashboard_name}')
+            logger.error(f"Falha na coleta de dados para {dashboard_name}.")
             return None
     except Exception as e:
-        logger.error(f'Erro ao processar o dashboard {dashboard_name}: {e}')
+        logger.error(f"Erro durante o processamento do {dashboard_name}: {e}")
         return None
