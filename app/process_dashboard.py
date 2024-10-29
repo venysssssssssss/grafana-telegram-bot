@@ -57,7 +57,7 @@ def process_dashboard(
     try:
         logger.info(f"Iniciando coleta de dados para {dashboard_name}.")
         result = collect_data_from_dashboard(
-            driver, dashboard_name, actions, browser_manager, download_path, initial_run
+            driver, dashboard_name, actions, browser_manager, download_path, initial_run=True
         )
 
         if result:
