@@ -1,0 +1,46 @@
+name: Monitoramento e Coleta Automática
+
+# O workflow será acionado nos horários e dias especificados automaticamente
+on:
+  schedule:
+    - cron: '4 8 * * 1-5'   # Segunda a sexta 08:04
+    - cron: '4 12 * * 1-5'  # Segunda a sexta 12:04
+    - cron: '14 16 * * 1-5' # Segunda a sexta 16:14
+    - cron: '4 20 * * 1-5'  # Segunda a sexta 20:04
+    - cron: '45 17 * * 5'   # Sexta-feira 17:45
+    - cron: '8 9 * * 6'     # Sábado 09:04
+    - cron: '4 12 * * 6'    # Sábado 12:04
+    - cron: '54 15 * * 6'   # Sábado 15:54
+
+jobs:
+  monitoramento_coleta:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Iniciar Monitoramento (Somente na Primeira Execução)
+      run: |
+        echo "Iniciando o monitoramento..."
+        curl -X GET http://198.58.120.71:8001/iniciar-monitoramento || echo "Monitoramento já iniciado."
+
+    - name: Pausar Monitoramento
+      run: |
+        echo "Pausando o monitoramento 1 minuto antes do horário..."
+        curl -X GET http://198.58.120.71:8001/parar-monitoramento
+        echo "Monitoramento pausado com sucesso."
+        sleep 60  # Aguarde até o horário exato para executar a coleta
+
+    - name: Executar Coleta
+      run: |
+        echo "Executando a coleta..."
+        response=$(curl -s -o /dev/null -w "%{http_code}" -X POST http://198.58.120.71:8001/executar-coleta)
+        if [ "$response" != "200" ]; then
+          echo "Erro na execução da coleta. Código HTTP: $response"
+          exit 1
+        fi
+        echo "Coleta executada com sucesso."
+
+    - name: Retomar Monitoramento
+      run: |
+        echo "Retomando o monitoramento após a coleta..."
+        curl -X GET http://198.58.120.71:8001/iniciar-monitoramento
+        echo "Monitoramento retomado com sucesso."
