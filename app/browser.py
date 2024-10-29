@@ -31,7 +31,7 @@ class BrowserManager:
 
         service = Service(driver_path)
         options = webdriver.ChromeOptions()
-        # options.add_argument('--headless')
+        options.add_argument('--headless')
         options.add_argument(
             '--no-sandbox'
         )  # Adicionado para evitar problemas de sandbox
