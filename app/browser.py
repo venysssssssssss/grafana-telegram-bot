@@ -28,6 +28,19 @@ class BrowserManager:
         self.encerrar_processos_chrome()  # Garante que processos anteriores estão encerrados
 
         driver_path = os.path.join(os.getcwd(), '/usr/local/bin/chromedriver')
+    def __init__(self, download_directory):
+        self.download_directory = os.path.join(os.getcwd(), download_directory)
+        if not os.path.exists(self.download_directory):
+            os.makedirs(self.download_directory)
+        self.driver = self.start_browser(self.download_directory)
+
+    def start_browser(self, download_path):
+        driver_path = os.path.join(
+            os.getcwd(), '/usr/local/bin/chromedriver'
+        )  # Corrigido caminho absoluto para o chromedriver
+
+        self.encerrar_processos_chrome()
+
         service = Service(driver_path)
         options = webdriver.ChromeOptions()
         options.add_argument('--no-sandbox')
@@ -36,6 +49,18 @@ class BrowserManager:
         options.add_argument('--disable-dev-shm-usage')
         options.add_argument('--disable-gpu')
         options.add_argument('--window-size=1366,1080')
+        # options.add_argument('--headless')
+        options.add_argument(
+            '--no-sandbox'
+        )  # Adicionado para evitar problemas de sandbox
+        options.add_argument(
+            '--disable-dev-shm-usage'
+        )  # Adicionado para evitar problemas de memória compartilhada
+        options.add_argument(
+            '--disable-gpu'
+        )  # Adicionado para evitar problemas com GPU
+        options.add_argument('--window-size=1366,1080')  # Tamanho da janela
+
         options.add_experimental_option(
             'prefs',
             {
@@ -58,7 +83,7 @@ class BrowserManager:
         """Reinicia o navegador garantindo que todos os processos sejam encerrados."""
         try:
             self.fechar_navegador()
-            self.start_browser()
+            self.start_browser('data')
         except Exception as e:
             logger.error(f'Erro ao reiniciar o navegador: {e}')
             raise

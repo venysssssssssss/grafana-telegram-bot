@@ -1,6 +1,7 @@
 import logging
 import time
-from threading import Thread
+from queue import Queue
+from threading import Lock
 
 import schedule
 from authentication import Authenticator
@@ -89,24 +90,35 @@ def collect_info(driver, dashboard_name, dashboard_url):
         return False
 
 
-def monitor_falhas(driver_mvp1, driver_mvp3, url_mvp1, url_mvp3):
+def monitor_falhas(
+    driver_mvp1, driver_mvp3, url_mvp1, url_mvp3, lock, task_queue
+):
     """Inicia o monitoramento de falhas nos dashboards MVP1 e MVP3."""
     logging.info('Iniciando monitoramento de falhas para MVP1 e MVP3')
 
     def verificar_falhas(dashboard_name, driver, url):
-        falha_detectada = collect_info(driver, dashboard_name, url)
-        if falha_detectada:
-            send_telegram_message(
-                f'🤖 *{dashboard_name} - Falha de sistema* ❌\n\n'
-                f'ℹ️ *Informação*: falha ao importar pedidos'
-            )
-            while falha_detectada:
-                time.sleep(60)
-                falha_detectada = collect_info(driver, dashboard_name, url)
-            send_telegram_message(
-                f'🤖 *{dashboard_name} - Em produção* ✅\n\n'
-                f'⏰ *Status*: operando normalmente'
-            )
+        """Função interna para verificar falhas."""
+        with lock:
+            if not task_queue.empty():
+                logging.info(
+                    'Pausando verificação devido a uma tarefa em andamento.'
+                )
+                task_queue.get()  # Espera a tarefa ser processada
+                return
+
+            falha_detectada = collect_info(driver, dashboard_name, url)
+            if falha_detectada:
+                send_telegram_message(
+                    f'🤖 *{dashboard_name} - Falha de sistema* ❌\n\n'
+                    f'ℹ️ *Informação*: falha ao importar pedidos'
+                )
+                while falha_detectada:
+                    time.sleep(60)
+                    falha_detectada = collect_info(driver, dashboard_name, url)
+                send_telegram_message(
+                    f'🤖 *{dashboard_name} - Em produção* ✅\n\n'
+                    f'⏰ *Status*: operando normalmente'
+                )
 
     # Realizar login no MVP1 antes de iniciar o monitoramento
     realizar_login(driver_mvp1, url_mvp1)
