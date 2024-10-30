@@ -2,12 +2,12 @@ import logging
 import os
 import time
 
-from app.authentication import Authenticator
-from app.collect_data import collect_data_from_dashboard
-from app.dashboard_xpaths import DASHBOARD_XPATHS
+from app.auth.authentication import Authenticator
+from app.src.collect_data import collect_data_from_dashboard
+from app.browser.dashboard_xpaths import DASHBOARD_XPATHS
 from selenium.common.exceptions import (NoSuchElementException,
                                         WebDriverException)
-from app.send_telegram_msg import send_informational_message
+from app.src.send_telegram_msg import send_informational_message
 
 # Configurar logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')

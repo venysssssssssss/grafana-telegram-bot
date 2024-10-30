@@ -7,11 +7,11 @@ from threading import Lock, Thread
 import schedule
 from fastapi import FastAPI, HTTPException
 
-from app.action_manager import ActionManager
-from app.browser import BrowserManager
-from app.monitor_falhas import (iniciar_monitoramento, monitor_falhas,
+from app.actions.action_manager import ActionManager
+from app.browser.browser import BrowserManager
+from app.src.monitor_falhas import (iniciar_monitoramento, monitor_falhas,
                                 pausar_monitoramento)
-from app.process_dashboard import process_dashboard
+from app.src.process_dashboard import process_dashboard
 
 browser_manager = BrowserManager('data')
 

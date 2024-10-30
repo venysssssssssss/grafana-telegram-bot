@@ -4,10 +4,10 @@ from queue import Queue
 from threading import Lock
 
 import schedule
-from authentication import Authenticator
+from app.auth.authentication import Authenticator
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.by import By
-from send_telegram_msg import send_telegram_message
+from app.src.send_telegram_msg import send_telegram_message
 
 monitorando_falhas = (
     True  # Variável global para controlar o estado do monitoramento

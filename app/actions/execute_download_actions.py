@@ -2,8 +2,8 @@ import os
 import time
 from venv import logger
 
-from app.action_manager import ActionManager
-from app.browser import BrowserManager
+from app.actions.action_manager import ActionManager
+from app.browser.browser import BrowserManager
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait

@@ -3,12 +3,12 @@ import os
 import time
 
 import schedule
-from authentication import Authenticator
-from browser import BrowserManager
-from execute_download_actions import execute_download_actions
-from monitor_falhas import iniciar_monitoramento, pausar_monitoramento
+from app.auth.authentication import Authenticator
+from app.browser.browser import BrowserManager
+from app.actions.execute_download_actions import execute_download_actions
+from app.src.monitor_falhas import iniciar_monitoramento, pausar_monitoramento
 from selenium.common.exceptions import WebDriverException
-from send_telegram_msg import send_informational_message
+from app.src.send_telegram_msg import send_informational_message
 
 # Configurar logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')

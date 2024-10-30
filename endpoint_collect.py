@@ -1,8 +1,8 @@
 from fastapi import FastAPI, HTTPException
 from selenium.webdriver import Chrome
-from app.browser import BrowserManager
-from app.process_dashboard import process_dashboard
-from app.action_manager import ActionManager
+from app.browser.browser import BrowserManager
+from app.src.process_dashboard import process_dashboard
+from app.actions.action_manager import ActionManager
 
 app = FastAPI()
 
