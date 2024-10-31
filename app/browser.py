@@ -62,13 +62,14 @@ class BrowserManager:
 
             # Aguarda para garantir que os processos tenham sido encerrados
             time.sleep(2)
-            self.driver = self.start_browser(self.download_directory)  # Reinicia o navegador
+            self.driver = self.start_browser(
+                self.download_directory
+            )  # Reinicia o navegador
 
-            logger.info("Navegador reiniciado com sucesso.")
+            logger.info('Navegador reiniciado com sucesso.')
         except Exception as e:
-            logger.error(f"Erro ao reiniciar o navegador: {e}")
+            logger.error(f'Erro ao reiniciar o navegador: {e}')
             raise
-
 
     def fechar_navegador(self):
         """Fecha o navegador e limpa os processos relacionados."""

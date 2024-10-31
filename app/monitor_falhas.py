@@ -1,7 +1,7 @@
 import logging
 import time
 from queue import Queue
-from threading import Lock, Event, Thread
+from threading import Event, Lock, Thread
 
 import schedule
 from selenium.common.exceptions import WebDriverException
@@ -17,17 +17,20 @@ monitor_event.set()  # Iniciado como "ativo"
 # Configuração de logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 
+
 def iniciar_monitoramento():
     """Retoma o monitoramento de falhas."""
     if not monitor_event.is_set():
         logging.info('Iniciando monitoramento de falhas...')
         monitor_event.set()
 
+
 def pausar_monitoramento():
     """Pausa o monitoramento de falhas."""
     if monitor_event.is_set():
         logging.info('Pausando monitoramento de falhas...')
         monitor_event.clear()
+
 
 def realizar_login(driver, url_mvp1):
     """Realiza login no dashboard MVP1."""
@@ -40,10 +43,13 @@ def realizar_login(driver, url_mvp1):
     except WebDriverException as e:
         logging.error(f'Erro ao realizar login no MVP1: {e}')
 
+
 def collect_info(driver, dashboard_name, dashboard_url):
     """Coleta informações do dashboard e verifica falhas."""
     if not monitor_event.is_set():
-        logging.info(f'Monitoramento pausado, não verificando {dashboard_name}')
+        logging.info(
+            f'Monitoramento pausado, não verificando {dashboard_name}'
+        )
         return False
 
     try:
@@ -70,7 +76,10 @@ def collect_info(driver, dashboard_name, dashboard_url):
             status = driver.find_element(By.XPATH, status_xpath).text
 
             logging.info(f'Item: {item} - Status: {status}')
-            if item == 'ValidarVendasLiberadas' and status == 'Falha de sistema':
+            if (
+                item == 'ValidarVendasLiberadas'
+                and status == 'Falha de sistema'
+            ):
                 consecutive_failures += 1
                 if consecutive_failures >= 3:
                     falha_detectada = True
@@ -83,7 +92,10 @@ def collect_info(driver, dashboard_name, dashboard_url):
         logging.error(f'Erro ao coletar informações: {e}')
         return False
 
-def monitor_falhas(driver_mvp1, driver_mvp3, url_mvp1, url_mvp3, lock, task_queue):
+
+def monitor_falhas(
+    driver_mvp1, driver_mvp3, url_mvp1, url_mvp3, lock, task_queue
+):
     """Inicia o monitoramento de falhas nos dashboards."""
     logging.info('Iniciando monitoramento de falhas para MVP1 e MVP3')
 
@@ -112,8 +124,12 @@ def monitor_falhas(driver_mvp1, driver_mvp3, url_mvp1, url_mvp3, lock, task_queu
     realizar_login(driver_mvp1, url_mvp1)
 
     # Agendamento periódico para verificar falhas
-    schedule.every(1).minutes.do(verificar_falhas, 'MVP1', driver_mvp1, url_mvp1)
-    schedule.every(1).minutes.do(verificar_falhas, 'MVP3', driver_mvp3, url_mvp3)
+    schedule.every(1).minutes.do(
+        verificar_falhas, 'MVP1', driver_mvp1, url_mvp1
+    )
+    schedule.every(1).minutes.do(
+        verificar_falhas, 'MVP3', driver_mvp3, url_mvp3
+    )
 
     # Loop de monitoramento em uma thread separada
     while True:

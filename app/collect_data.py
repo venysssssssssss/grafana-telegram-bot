@@ -19,8 +19,10 @@ def collect_data_from_dashboard(
     download_path,
     initial_run=True,
 ):
-    logger.info(f'Iniciando coleta de dados para o dashboard: {dashboard_name}')
-    
+    logger.info(
+        f'Iniciando coleta de dados para o dashboard: {dashboard_name}'
+    )
+
     xpaths = DASHBOARD_XPATHS.get(dashboard_name)
 
     logger.info(f'XPaths encontrados: {xpaths}')
@@ -31,20 +33,24 @@ def collect_data_from_dashboard(
 
     try:
         if initial_run:
-            logger.info(f'Primeira execução: acessando elementos do dashboard {dashboard_name}')
+            logger.info(
+                f'Primeira execução: acessando elementos do dashboard {dashboard_name}'
+            )
             actions.click_element(xpaths['var_exibir'])
             actions.click_element(xpaths['opcao_exibir'])
-        
+
         # Verifica se o driver ainda está disponível
         if not driver:
-            logger.error("WebDriver não está disponível! Reiniciando o navegador.")
+            logger.error(
+                'WebDriver não está disponível! Reiniciando o navegador.'
+            )
             browser_manager.reiniciar_navegador()
             return None
 
         # Scroll até a tabela
         logger.info(f'Realizando scroll no dashboard {dashboard_name}')
         browser_manager.scroll_to_table()
-        
+
         # Iniciar download se for a primeira execução
         if initial_run:
             logger.info(f'Iniciando download no dashboard {dashboard_name}')
@@ -52,21 +58,31 @@ def collect_data_from_dashboard(
                 actions, browser_manager, download_path, dashboard_name
             )
             if relatorio_path:
-                logger.info(f'Relatório baixado com sucesso no caminho: {relatorio_path}')
+                logger.info(
+                    f'Relatório baixado com sucesso no caminho: {relatorio_path}'
+                )
             else:
-                logger.warning(f'Falha no download do relatório para o dashboard {dashboard_name}')
+                logger.warning(
+                    f'Falha no download do relatório para o dashboard {dashboard_name}'
+                )
         else:
             relatorio_path = None
 
         # Coletar KPIs
         logger.info(f'Coletando KPIs para o dashboard {dashboard_name}')
         tme_element = actions.find_element(xpaths['tme'])
-        tme_xpath = tme_element.text if tme_element.text != 'No data' else '00:00:00'
+        tme_xpath = (
+            tme_element.text if tme_element.text != 'No data' else '00:00:00'
+        )
         tef_element = actions.find_element(xpaths['tef'])
-        tef_xpath = tef_element.text if tef_element.text != 'No data' else '00:00:00'
+        tef_xpath = (
+            tef_element.text if tef_element.text != 'No data' else '00:00:00'
+        )
         backlog_xpath = actions.find_element(xpaths['backlog']).text
-        
-        logger.info(f'KPIs coletados: TME={tme_xpath}, TEF={tef_xpath}, Backlog={backlog_xpath}')
+
+        logger.info(
+            f'KPIs coletados: TME={tme_xpath}, TEF={tef_xpath}, Backlog={backlog_xpath}'
+        )
 
         return {
             'tme': tme_xpath,
@@ -84,4 +100,3 @@ def collect_data_from_dashboard(
     except Exception as e:
         logger.error(f'Erro inesperado: {e}', exc_info=True)
         return None
-
