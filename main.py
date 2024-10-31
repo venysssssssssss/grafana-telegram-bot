@@ -32,7 +32,7 @@ dashboards = {
 browser_manager = BrowserManager('data')
 
 
-driver_mvp1, driver_mvp3 = None, None  # Drivers iniciarão nulos até o monitoramento começar
+driver_mvp1, driver_mvp3 = browser_manager.driver, browser_manager.driver  # Drivers iniciarão nulos até o monitoramento começar
 
 # Thread de monitoramento
 monitor_thread = None
