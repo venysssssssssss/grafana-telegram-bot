@@ -39,6 +39,16 @@ monitor_thread = None
 monitoring_active = False  # Sinalização de controle do monitoramento
 
 
+def encerrar_processos_residuais():
+    """Encerra processos residuais do Chrome e ChromeDriver."""
+    for proc in psutil.process_iter(attrs=['pid', 'name']):
+        if proc.info['name'] in ['chrome', 'chromedriver']:
+            try:
+                proc.kill()
+                logging.info(f'Processo {proc.info["name"]} (PID: {proc.info["pid"]}) encerrado.')
+            except psutil.NoSuchProcess:
+                pass
+
 def iniciar_monitoramento_thread():
     """Inicia a thread do monitoramento de falhas."""
     global monitor_thread, monitoring_active
@@ -47,6 +57,10 @@ def iniciar_monitoramento_thread():
         raise HTTPException(
             status_code=400, detail='Monitoramento já iniciado.'
         )
+    
+    encerrar_processos_residuais()
+
+    time.sleep(2)
 
     # Inicializa os drivers e ativa o monitoramento
     global driver_mvp1, driver_mvp3, monitoring_active
