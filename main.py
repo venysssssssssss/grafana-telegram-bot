@@ -1,5 +1,6 @@
 import logging
 import time
+import psutil
 from queue import Queue
 from threading import Lock, Thread
 
