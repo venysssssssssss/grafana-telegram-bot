@@ -71,7 +71,7 @@ def iniciar_monitoramento_thread():
 
 
 def finalizar_monitoramento():
-    """Finaliza a thread do monitoramento e encerra os drivers."""
+    """Finaliza o monitoramento e encerra os drivers."""
     global driver_mvp1, driver_mvp3, monitor_thread, monitoring_active
 
     if not monitor_thread or not monitor_thread.is_alive():
@@ -80,13 +80,17 @@ def finalizar_monitoramento():
             status_code=400, detail='Nenhum monitoramento em execução.'
         )
 
+    # Desativa o monitoramento e registra a ação
     logger.info('Finalizando monitoramento e encerrando drivers.')
-    monitoring_active = False  # Desativa a sinalização de monitoramento
-    monitor_thread.join()  # Espera a thread finalizar
+    monitoring_active = False  # Sinalização para finalizar o loop na thread
 
-    # Finaliza os drivers
+    # Encerra os drivers sem aguardar a finalização da thread
     browser_manager.encerrar_processos_chrome()
     driver_mvp1, driver_mvp3 = None, None
+
+    # Opcionalmente, aguarde a thread finalizar em segundo plano
+    monitor_thread.join(timeout=5)  # Tenta finalizar em até 5 segundos, sem bloquear a resposta
+
 
 
 @app.get('/iniciar-monitoramento')
