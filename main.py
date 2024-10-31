@@ -8,8 +8,7 @@ from fastapi import FastAPI, HTTPException
 
 from app.action_manager import ActionManager
 from app.browser import BrowserManager
-from app.monitor_falhas import (iniciar_monitoramento, monitor_falhas,
-                                pausar_monitoramento)
+from app.monitor_falhas import iniciar_monitoramento, monitor_falhas, pausar_monitoramento
 from app.process_dashboard import process_dashboard
 
 # Configuração de logging
@@ -50,23 +49,28 @@ def encerrar_processos_residuais():
             except psutil.NoSuchProcess:
                 pass
 
+
 def iniciar_monitoramento_thread():
     """Inicia a thread do monitoramento de falhas."""
-    global monitor_thread, monitoring_active
+    global monitor_thread, monitoring_active, driver_mvp1, driver_mvp3
+
+    # Verifica se já existe uma thread de monitoramento ativa
     if monitor_thread and monitor_thread.is_alive():
         logger.info('Monitoramento já está em execução.')
         raise HTTPException(
             status_code=400, detail='Monitoramento já iniciado.'
         )
 
+    # Limpa processos Chrome e ChromeDriver residuais antes de iniciar
+    encerrar_processos_residuais()
     time.sleep(2)
 
     # Inicializa os drivers e ativa o monitoramento
-    global driver_mvp1, driver_mvp3, monitoring_active
     driver_mvp1 = browser_manager.driver
     driver_mvp3 = browser_manager.driver
     monitoring_active = True
 
+    # Inicia a thread de monitoramento
     monitor_thread = Thread(
         target=monitor_falhas,
         args=(
@@ -87,6 +91,7 @@ def finalizar_monitoramento():
     """Finaliza o monitoramento e encerra os drivers."""
     global driver_mvp1, driver_mvp3, monitor_thread, monitoring_active
 
+    # Verifica se o monitoramento está ativo
     if not monitor_thread or not monitor_thread.is_alive():
         logger.info('Nenhum monitoramento em execução.')
         raise HTTPException(
@@ -181,3 +186,4 @@ async def executar_coleta():
 
     finally:
         logging.info('Reiniciando monitoramento após a coleta.')
+        iniciar_monitoramento_thread()  # Reinicia o monitoramento após a coleta
