@@ -58,8 +58,6 @@ def iniciar_monitoramento_thread():
         raise HTTPException(
             status_code=400, detail='Monitoramento já iniciado.'
         )
-    
-    encerrar_processos_residuais()
 
     time.sleep(2)
 
@@ -101,6 +99,7 @@ def finalizar_monitoramento():
 
     # Encerra os drivers sem aguardar a finalização da thread
     browser_manager.encerrar_processos_chrome()
+    encerrar_processos_residuais()
     driver_mvp1, driver_mvp3 = None, None
 
     # Aguarda a thread finalizar com timeout e redefine monitor_thread
