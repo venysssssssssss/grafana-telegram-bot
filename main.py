@@ -74,8 +74,10 @@ def finalizar_monitoramento():
 
     logger.info("Finalizando monitoramento e encerrando drivers.")
     pausar_monitoramento()  # Pausa e encerra drivers
-    driver_mvp1.quit()
-    driver_mvp3.quit()
+    driver_mvp1 = browser_manager.quit()
+    driver_mvp3 = browser_manager.quit()
+    driver_mvp1
+    driver_mvp3
     driver_mvp1, driver_mvp3 = None, None
 
 @app.get('/iniciar-monitoramento')
