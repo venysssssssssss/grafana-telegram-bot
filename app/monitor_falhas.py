@@ -106,19 +106,30 @@ def monitor_falhas(
                 logging.info('Tarefa em andamento, adiando verificação.')
                 return
 
+            if not monitor_event.is_set():
+                logging.info(
+                    f'Monitoramento pausado, adiando verificação em {dashboard_name}.'
+                )
+                return
+
             falha_detectada = collect_info(driver, dashboard_name, url)
             if falha_detectada:
                 send_telegram_message(
                     f'🤖 *{dashboard_name} - Falha de sistema* ❌\n\n'
                     f'ℹ️ *Informação*: falha ao importar pedidos'
                 )
-                while falha_detectada:
+                while (
+                    falha_detectada and monitor_event.is_set()
+                ):  # Verifica o status de execução
                     time.sleep(60)
                     falha_detectada = collect_info(driver, dashboard_name, url)
-                send_telegram_message(
-                    f'🤖 *{dashboard_name} - Em produção* ✅\n\n'
-                    f'⏰ *Status*: operando normalmente'
-                )
+                if (
+                    monitor_event.is_set()
+                ):  # Envia mensagem se o monitoramento estiver ativo
+                    send_telegram_message(
+                        f'🤖 *{dashboard_name} - Em produção* ✅\n\n'
+                        f'⏰ *Status*: operando normalmente'
+                    )
 
     # Realizar login no MVP1 antes de iniciar o monitoramento
     realizar_login(driver_mvp1, url_mvp1)
