@@ -62,7 +62,7 @@ def iniciar_monitoramento_thread():
             dashboards['mvp1'],
             dashboards['mvp3'],
             monitoramento_lock,
-            task_queue
+            task_queue,
         ),
         daemon=True,
     )
@@ -88,9 +88,9 @@ def finalizar_monitoramento():
     browser_manager.encerrar_processos_chrome()
     driver_mvp1, driver_mvp3 = None, None
 
-    # Opcionalmente, aguarde a thread finalizar em segundo plano
-    monitor_thread.join(timeout=5)  # Tenta finalizar em até 5 segundos, sem bloquear a resposta
-
+    # Aguarda a thread finalizar com timeout e redefine monitor_thread
+    monitor_thread.join(timeout=5)
+    monitor_thread = None  # Permite recriação ao reiniciar o monitoramento
 
 
 @app.get('/iniciar-monitoramento')
