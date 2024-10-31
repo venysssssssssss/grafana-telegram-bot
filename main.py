@@ -62,8 +62,7 @@ def iniciar_monitoramento_thread():
             dashboards['mvp1'],
             dashboards['mvp3'],
             monitoramento_lock,
-            task_queue,
-            lambda: monitoring_active,
+            task_queue
         ),
         daemon=True,
     )
